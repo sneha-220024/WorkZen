@@ -1,0 +1,1 @@
+﻿// Attendance Mongoose model
