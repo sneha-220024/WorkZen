@@ -3,6 +3,8 @@ const router = express.Router();
 const { register, login, getMe } = require('../controllers/authController');
 const passport = require('passport');
 
+const { protect } = require('../middlewares/authMiddleware');
+
 router.post('/register', register);
 router.post('/login', login);
 
@@ -17,6 +19,6 @@ router.get('/google/callback',
         res.redirect('http://localhost:3000/dashboard'); // Update with frontend URL
     }
 );
-router.get('/me', getMe);
+router.get('/me', protect, getMe);
 
 module.exports = router;

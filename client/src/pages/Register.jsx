@@ -7,6 +7,7 @@ export default function Register() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('employee');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -18,9 +19,9 @@ export default function Register() {
         setError('');
         setLoading(true);
 
-        const result = await register(name, email, password);
+        const result = await register(name, email, password, role);
         if (result.success) {
-            navigate('/dashboard');
+            navigate(role === 'hr' ? '/dashboard/hr' : '/dashboard/employee');
         } else {
             setError(result.message);
         }
@@ -108,6 +109,36 @@ export default function Register() {
                                 className="appearance-none block w-full px-4 py-3 border border-border-color rounded-xl shadow-sm placeholder-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text-primary"
                                 placeholder="••••••••"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-text-primary mb-3">
+                                Select Your Role
+                            </label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setRole('employee')}
+                                    className={`py-3 px-4 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${role === 'employee'
+                                            ? 'border-primary bg-primary/5 text-primary'
+                                            : 'border-border-color bg-white text-text-secondary hover:border-text-secondary/30'
+                                        }`}
+                                >
+                                    <span className="text-xl">🏃</span>
+                                    <span className="font-bold text-sm">Employee</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setRole('hr')}
+                                    className={`py-3 px-4 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${role === 'hr'
+                                            ? 'border-primary bg-primary/5 text-primary'
+                                            : 'border-border-color bg-white text-text-secondary hover:border-text-secondary/30'
+                                        }`}
+                                >
+                                    <span className="text-xl">💼</span>
+                                    <span className="font-bold text-sm">HR Manager</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div>
