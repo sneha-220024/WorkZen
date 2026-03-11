@@ -15,10 +15,10 @@ import {
     MoreVertical
 } from 'lucide-react';
 
-
 const EmployeeDashboard = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [attendance] = useState({
         checkedIn: false,
@@ -26,7 +26,6 @@ const EmployeeDashboard = () => {
         checkOutTime: null,
     });
 
-    
     const stats = [
         {
             label: 'Present Days',
@@ -70,18 +69,9 @@ const EmployeeDashboard = () => {
         { id: 1, type: 'check-in', title: 'Check-in activity', time: '09:05 AM', date: 'Today', icon: Clock, color: 'text-blue-500' },
         { id: 2, type: 'leave', title: 'Annual Leave approved', time: '02:30 PM', date: 'Yesterday', icon: CheckCircle2, color: 'text-emerald-500' },
         { id: 3, type: 'payslip', title: 'February Payslip generated', time: '11:15 AM', date: 'Mar 01, 2026', icon: FileText, color: 'text-indigo-500' },
-        { id: 4, type: 'profile', title: 'Profile details updated', time: '10:00 AM', date: 'Feb 25, 2026', icon: UserIcon, color: 'text-orange-500' },];
-
-    const location = useLocation();
-
-    const sidebarItems = [
-        { label: 'Dashboard', icon: '🏠', path: '/dashboard/employee' },
-        { label: 'My Attendance', icon: '⏰', path: '/dashboard/employee/attendance' },
-        { label: 'Leave Management', icon: '🏖️', path: '/dashboard/employee/leave' },
-        { label: 'My Payslips', icon: '💸', path: '/dashboard/employee/payslips' },
-        { label: 'Notifications', icon: '🔔', path: '/dashboard/employee/notifications' },
-        { label: 'Profile', icon: '👤', path: '/dashboard/employee/profile' },
+        { id: 4, type: 'profile', title: 'Profile details updated', time: '10:00 AM', date: 'Feb 25, 2026', icon: UserIcon, color: 'text-orange-500' },
     ];
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Welcome Section */}
@@ -101,26 +91,6 @@ const EmployeeDashboard = () => {
                         Apply for Leave
                     </Button>
                 </div>
-                
-
-                <nav className="flex-1 p-4 space-y-2">
-                    {sidebarItems.map((item, idx) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <div
-                                key={idx}
-                                onClick={() => navigate(item.path)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${isActive
-                                    ? 'bg-primary text-white font-semibold'
-                                    : 'text-text-secondary hover:bg-primary-light hover:text-primary font-medium'
-                                    }`}
-                            >
-                                <span>{item.icon}</span>
-                                <span>{item.label}</span>
-                            </div>
-                        );
-                    })}
-                </nav>
             </div>
 
             {/* Stats Cards */}
@@ -135,23 +105,20 @@ const EmployeeDashboard = () => {
                             if (stat.label === 'Present Days' || stat.label === 'Overtime Hours') navigate('/dashboard/attendance');
                         }}
                     >
-                        <div className="flex items-start justify-between mb-4">
-                            <div className={`${stat.bgColor} ${stat.textColor} p-3 rounded-xl`}>
-                                <stat.icon size={24} />
+                        <div className="flex items-start justify-between mb-2">
+                            <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                            <div className={`${stat.bgColor} ${stat.textColor} p-2.5 rounded-xl`}>
+                                <stat.icon size={20} />
                             </div>
-                            <span className="text-emerald-500 flex items-center text-xs font-bold bg-emerald-50 px-2 py-1 rounded-full">
-                                <TrendingUp size={12} className="mr-1" />
-                                +2.5%
-                            </span>
                         </div>
-                        <h3 className="text-3xl font-bold text-slate-900 mb-1">{stat.count}</h3>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-tight">{stat.label}</p>
-                        <p className="text-xs text-slate-400 mt-4 flex items-center gap-1 font-medium">
+                        <h3 className="text-3xl font-bold text-slate-900 mb-4">{stat.count}</h3>
+                        <p className="text-xs text-slate-400 font-medium">
                             {stat.description}
                         </p>
                     </div>
                 ))}
             </div>
+
             {/* Bottom Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Activity */}

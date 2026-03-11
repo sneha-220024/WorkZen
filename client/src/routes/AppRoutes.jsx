@@ -1,27 +1,20 @@
 import React, { useContext } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage.jsx';
 import Login from '../pages/Login.jsx';
 import Register from '../pages/Register.jsx';
 import HRDashboard from '../pages/HRDashboard.jsx';
 import EmployeeDashboard from '../pages/EmployeeDashboard.jsx';
-
-import Leaves from '../pages/Leaves.jsx';
-import Payslips from '../pages/Payslips.jsx';
 import Profile from '../pages/Profile.jsx';
 import Documents from '../pages/Documents.jsx';
 import Settings from '../pages/Settings.jsx';
 import Attendance from '../pages/Attendance.jsx';
-import Notifications from '../pages/Notifications.jsx';
-import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
 import LeaveManagement from '../pages/LeaveManagement.jsx';
 import PayslipsPage from '../pages/PayslipsPage.jsx';
 import NotificationsPage from '../pages/NotificationsPage.jsx';
-
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
 import DashboardLayout from '../components/common/DashboardLayout.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
-import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 
 export default function AppRoutes() {
@@ -40,7 +33,7 @@ export default function AppRoutes() {
                 }
             >
                 <Route index element={<DashboardRedirect />} />
-                
+
                 <Route
                     path="employee"
                     element={
@@ -63,7 +56,7 @@ export default function AppRoutes() {
                     path="leaves"
                     element={
                         <EmployeeRoute>
-                            <Leaves />
+                            <LeaveManagement />
                         </EmployeeRoute>
                     }
                 />
@@ -72,7 +65,7 @@ export default function AppRoutes() {
                     path="payslips"
                     element={
                         <EmployeeRoute>
-                            <Payslips />
+                            <PayslipsPage />
                         </EmployeeRoute>
                     }
                 />
@@ -99,7 +92,7 @@ export default function AppRoutes() {
                     path="notifications"
                     element={
                         <EmployeeRoute>
-                            <Notifications />
+                            <NotificationsPage />
                         </EmployeeRoute>
                     }
                 />
@@ -122,23 +115,6 @@ export default function AppRoutes() {
                     </HRRoute>
                 }
             />
-
-
-
-            <Route
-                path="/dashboard/employee"
-                element={
-                    <EmployeeRoute>
-                        <EmployeeDashboard />
-                    </EmployeeRoute>
-                }
-            >
-                <Route index element={<EmployeeDashboardStats />} />
-                <Route path="leave" element={<LeaveManagement />} />
-                <Route path="payslips" element={<PayslipsPage />} />
-                <Route path="notifications" element={<NotificationsPage />} />
-            </Route>
-
         </Routes>
     );
 }
