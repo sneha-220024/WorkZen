@@ -5,6 +5,10 @@ import Login from '../pages/Login.jsx';
 import Register from '../pages/Register.jsx';
 import HRDashboard from '../pages/HRDashboard.jsx';
 import EmployeeDashboard from '../pages/EmployeeDashboard.jsx';
+import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
+import LeaveManagement from '../pages/LeaveManagement.jsx';
+import PayslipsPage from '../pages/PayslipsPage.jsx';
+import NotificationsPage from '../pages/NotificationsPage.jsx';
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
 import { Navigate } from 'react-router-dom';
@@ -43,7 +47,12 @@ export default function AppRoutes() {
                         <EmployeeDashboard />
                     </EmployeeRoute>
                 }
-            />
+            >
+                <Route index element={<EmployeeDashboardStats />} />
+                <Route path="leave" element={<LeaveManagement />} />
+                <Route path="payslips" element={<PayslipsPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
         </Routes>
     );
 }
