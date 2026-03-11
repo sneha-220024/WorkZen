@@ -5,7 +5,7 @@ import Login from '../pages/Login.jsx';
 import Register from '../pages/Register.jsx';
 import HRDashboard from '../pages/HRDashboard.jsx';
 import EmployeeDashboard from '../pages/EmployeeDashboard.jsx';
- feature/emplyeedashboard(profile,attendance)
+
 import Leaves from '../pages/Leaves.jsx';
 import Payslips from '../pages/Payslips.jsx';
 import Profile from '../pages/Profile.jsx';
@@ -17,7 +17,7 @@ import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
 import LeaveManagement from '../pages/LeaveManagement.jsx';
 import PayslipsPage from '../pages/PayslipsPage.jsx';
 import NotificationsPage from '../pages/NotificationsPage.jsx';
- main
+
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
 import DashboardLayout from '../components/common/DashboardLayout.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
@@ -122,7 +122,7 @@ export default function AppRoutes() {
                     </HRRoute>
                 }
             />
- feature/emplyeedashboard(profile,attendance)
+
 
 
             <Route
@@ -138,7 +138,7 @@ export default function AppRoutes() {
                 <Route path="payslips" element={<PayslipsPage />} />
                 <Route path="notifications" element={<NotificationsPage />} />
             </Route>
-main
+
         </Routes>
     );
 }
