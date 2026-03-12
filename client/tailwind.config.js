@@ -15,9 +15,7 @@ export default {
         'text-primary': '#0F172A',
         'text-secondary': '#64748B',
         'border-color': '#E2E8F0',
-        'navy-900': '#0f172a',
       },
-
       fontFamily: {
         sora: ['Sora', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
