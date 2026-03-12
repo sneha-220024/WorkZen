@@ -16,6 +16,7 @@ import NotificationsPage from '../pages/NotificationsPage.jsx';
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
 import DashboardLayout from '../components/common/DashboardLayout.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
+import Notifications from '../pages/Notifications.jsx';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 
@@ -115,6 +116,24 @@ export default function AppRoutes() {
                     <HRRoute>
                         <HRDashboard />
                     </HRRoute>
+                }
+            />
+
+            <Route
+                path="/dashboard/hr/notifications"
+                element={
+                    <HRRoute>
+                        <Notifications />
+                    </HRRoute>
+                }
+            />
+
+            <Route
+                path="/dashboard/employee"
+                element={
+                    <EmployeeRoute>
+                        <EmployeeDashboard />
+                    </EmployeeRoute>
                 }
             />
         </Routes>
