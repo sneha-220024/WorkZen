@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    salaryDetails: {
+        basicSalary: { type: Number, default: 4000 },
+        housingAllowance: { type: Number, default: 800 },
+        transportAllowance: { type: Number, default: 200 },
+        taxDeduction: { type: Number, default: 500 }
     }
 });
 

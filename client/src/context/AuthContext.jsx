@@ -3,6 +3,18 @@ import axios from 'axios';
 
 export const AuthContext = createContext(null);
 
+// Helper: get the stored token from localStorage
+export const getStoredToken = () => {
+    try {
+        const stored = localStorage.getItem('user');
+        if (!stored) return null;
+        const parsed = JSON.parse(stored);
+        return parsed.token || null;
+    } catch {
+        return null;
+    }
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -10,29 +22,31 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkLoggedIn = async () => {
             try {
-                // Set default withCredentials for axios
                 axios.defaults.withCredentials = true;
 
+                // Always try to read previously stored user (which includes the token)
                 const storedUserStr = localStorage.getItem('user');
-                let headers = {};
+                let storedUser = null;
                 if (storedUserStr) {
-                    const storedUser = JSON.parse(storedUserStr);
-                    if (storedUser.token) headers.Authorization = `Bearer ${storedUser.token}`;
+                    storedUser = JSON.parse(storedUserStr);
                 }
 
+                const token = storedUser?.token;
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+                // Validate the token with the backend
                 const res = await axios.get('http://localhost:5000/api/auth/me', { headers });
+
                 if (res.data.success) {
-                    setUser(res.data.data);
-                    localStorage.setItem('user', JSON.stringify(res.data.data));
-                } else {
-                    // If no session found, check localStorage as fallback
-                    const storedUser = localStorage.getItem('user');
-                    if (storedUser) {
-                        setUser(JSON.parse(storedUser));
-                    }
+                    // Merge the fresh user data with the stored token so we don't lose it
+                    const freshUser = { ...res.data.data, token };
+                    setUser(freshUser);
+                    localStorage.setItem('user', JSON.stringify(freshUser));
+                } else if (storedUser) {
+                    setUser(storedUser);
                 }
             } catch (error) {
-                // If backend check fails, fallback to localStorage or null
+                // Backend check failed – fall back to localStorage user
                 const storedUser = localStorage.getItem('user');
                 if (storedUser) {
                     setUser(JSON.parse(storedUser));
@@ -49,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
             if (res.data.success) {
-                const userData = res.data;
+                const userData = res.data; // { success, _id, name, email, role, token }
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
                 return { success: true };
@@ -64,7 +78,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await axios.post('http://localhost:5000/api/auth/register', { name, email, password, role });
             if (res.data.success) {
-                const userData = res.data;
+                const userData = res.data; // { success, _id, name, email, role, token }
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
                 return { success: true };

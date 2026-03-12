@@ -5,7 +5,16 @@ import Login from '../pages/Login.jsx';
 import Register from '../pages/Register.jsx';
 import HRDashboard from '../pages/HRDashboard.jsx';
 import EmployeeDashboard from '../pages/EmployeeDashboard.jsx';
+import Profile from '../pages/Profile.jsx';
+import Documents from '../pages/Documents.jsx';
+import Settings from '../pages/Settings.jsx';
+import Attendance from '../pages/Attendance.jsx';
+import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
+import LeaveManagement from '../pages/LeaveManagement.jsx';
+import PayslipsPage from '../pages/PayslipsPage.jsx';
+import NotificationsPage from '../pages/NotificationsPage.jsx';
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
+import DashboardLayout from '../components/common/DashboardLayout.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
 import Notifications from '../pages/Notifications.jsx';
 import { Navigate } from 'react-router-dom';
@@ -22,11 +31,84 @@ export default function AppRoutes() {
                 path="/dashboard"
                 element={
                     <ProtectedRoute>
-                        {/* Auto-redirect to the correct role-specific dashboard */}
-                        <DashboardRedirect />
+                        <DashboardLayout />
                     </ProtectedRoute>
                 }
-            />
+            >
+                <Route index element={<DashboardRedirect />} />
+
+                <Route
+                    path="employee"
+                    element={
+                        <EmployeeRoute>
+                            <EmployeeDashboard />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="attendance"
+                    element={
+                        <EmployeeRoute>
+                            <Attendance />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="leaves"
+                    element={
+                        <EmployeeRoute>
+                            <LeaveManagement />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="payslips"
+                    element={
+                        <EmployeeRoute>
+                            <PayslipsPage />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="profile"
+                    element={
+                        <EmployeeRoute>
+                            <Profile />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="documents"
+                    element={
+                        <EmployeeRoute>
+                            <Documents />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="notifications"
+                    element={
+                        <EmployeeRoute>
+                            <NotificationsPage />
+                        </EmployeeRoute>
+                    }
+                />
+
+                <Route
+                    path="settings"
+                    element={
+                        <EmployeeRoute>
+                            <Settings />
+                        </EmployeeRoute>
+                    }
+                />
+            </Route>
 
             <Route
                 path="/dashboard/hr"

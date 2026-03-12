@@ -41,6 +41,9 @@ app.use(passport.session());
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/attendance', require('./routes/attendanceRoutes'));
+app.use('/api/leaves', require('./routes/leaveRoutes'));
+app.use('/api/payroll', require('./routes/payrollRoutes'));
 
 app.get('/', (req, res) => {
     res.send('API is running...');
