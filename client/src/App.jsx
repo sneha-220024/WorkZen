@@ -7,7 +7,8 @@ import { Toaster } from 'react-hot-toast';
 export default function App() {
     return (
         <AuthProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Toaster position="top-right" />
+            <BrowserRouter>
                 <AppRoutes />
             </BrowserRouter>
         </AuthProvider>
