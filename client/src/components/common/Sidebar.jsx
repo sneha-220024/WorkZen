@@ -13,7 +13,7 @@ import {
     Home
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
     const { user, logout } = useContext(AuthContext);
     const location = useLocation();
 
@@ -38,7 +38,10 @@ const Sidebar = () => {
         });
     };
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        if (isNotificationsActive) return false;
+        return location.pathname === path;
+    };
 
     return (
         <aside className="w-64 bg-slate-900 h-screen flex flex-col text-slate-300">
@@ -58,18 +61,25 @@ const Sidebar = () => {
                     <Link
                         key={item.path}
                         to={item.disabled ? '#' : item.path}
-                        onClick={(e) => item.disabled && handleDisabledClick(e, item.label)}
+                        onClick={(e) => {
+                            if (item.disabled) {
+                                handleDisabledClick(e, item.label);
+                            } else if (item.label === 'Notifications' && onNotificationClick) {
+                                e.preventDefault();
+                                onNotificationClick();
+                            }
+                        }}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                             item.disabled 
                                 ? 'opacity-60 cursor-not-allowed hover:bg-transparent' 
-                                : isActive(item.path)
+                                : (isActive(item.path) || (item.label === 'Notifications' && isNotificationsActive))
                                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                                     : 'hover:bg-slate-800 hover:text-white'
                         }`}
                     >
                         <item.icon 
                             size={20} 
-                            className={`${!item.disabled && isActive(item.path) ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} 
+                            className={`${!item.disabled && (isActive(item.path) || (item.label === 'Notifications' && isNotificationsActive)) ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} 
                         />
                         <span className="font-medium">{item.label}</span>
                     </Link>
