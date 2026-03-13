@@ -9,80 +9,69 @@ import {
     FileText,
     Bell,
     Search,
-    Plus,
-    Eye,
-    Pencil,
-    Trash2,
+    LogIn,
+    LogOut,
 } from 'lucide-react';
 
-// --- Mock Employee Data ---
-const MOCK_EMPLOYEES = [
+// --- Mock Attendance Data ---
+const MOCK_ATTENDANCE = [
     {
-        id: 'EMP001',
+        id: 'ATT001',
         name: 'Sarah Johnson',
-        email: 'sarah@workzen.com',
-        department: 'Engineering',
-        role: 'Senior Developer',
-        status: 'Active',
-        joinDate: '2023-01-15',
+        date: '2026-03-07',
+        checkIn: '09:02 AM',
+        checkOut: '06:15 PM',
+        hours: '9h 13m',
+        status: 'Present',
     },
     {
-        id: 'EMP002',
+        id: 'ATT002',
         name: 'Mike Chen',
-        email: 'mike@workzen.com',
-        department: 'Design',
-        role: 'UI/UX Lead',
-        status: 'Active',
-        joinDate: '2023-03-22',
+        date: '2026-03-07',
+        checkIn: '08:45 AM',
+        checkOut: '05:30 PM',
+        hours: '8h 45m',
+        status: 'Present',
     },
     {
-        id: 'EMP003',
+        id: 'ATT003',
         name: 'Emily Davis',
-        email: 'emily@workzen.com',
-        department: 'Marketing',
-        role: 'Marketing Manager',
-        status: 'Active',
-        joinDate: '2022-11-08',
+        date: '2026-03-07',
+        checkIn: '09:30 AM',
+        checkOut: '—',
+        hours: '—',
+        status: 'Working',
     },
     {
-        id: 'EMP004',
+        id: 'ATT004',
         name: 'Alex Kim',
-        email: 'alex@workzen.com',
-        department: 'HR',
-        role: 'HR Specialist',
-        status: 'On Leave',
-        joinDate: '2023-06-01',
+        date: '2026-03-07',
+        checkIn: '—',
+        checkOut: '—',
+        hours: '—',
+        status: 'Absent',
     },
     {
-        id: 'EMP005',
+        id: 'ATT005',
         name: 'Lisa Wang',
-        email: 'lisa@workzen.com',
-        department: 'Finance',
-        role: 'Accountant',
-        status: 'Active',
-        joinDate: '2022-08-14',
+        date: '2026-03-07',
+        checkIn: '08:58 AM',
+        checkOut: '06:00 PM',
+        hours: '9h 02m',
+        status: 'Present',
     },
     {
-        id: 'EMP006',
+        id: 'ATT006',
         name: 'James Brown',
-        email: 'james@workzen.com',
-        department: 'Engineering',
-        role: 'DevOps Engineer',
-        status: 'Active',
-        joinDate: '2023-02-10',
-    },
-    {
-        id: 'EMP007',
-        name: 'David Wilson',
-        email: 'david@workzen.com',
-        department: 'Support',
-        role: 'Support Lead',
-        status: 'Active',
-        joinDate: '2023-04-05',
+        date: '2026-03-07',
+        checkIn: '10:15 AM',
+        checkOut: '—',
+        hours: '—',
+        status: 'Late',
     },
 ];
 
-// --- Avatar colors for variety ---
+// --- Avatar colors ---
 const AVATAR_COLORS = [
     { bg: '#EEF2FF', text: '#4F46E5' },
     { bg: '#FFF7ED', text: '#EA580C' },
@@ -98,15 +87,15 @@ const getInitials = (name) => {
     return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
-const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
-};
-
-// --- Sub-components ---
+// --- Status Badge ---
 const StatusBadge = ({ status }) => {
-    const isLeave = status?.toLowerCase() === 'on leave';
+    const statusStyles = {
+        Present: { bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
+        Working: { bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
+        Absent:  { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA' },
+        Late:    { bg: '#FFF7ED', color: '#EA580C', border: '#FED7AA' },
+    };
+    const style = statusStyles[status] || { bg: '#F3F4F6', color: '#6B7280', border: '#E5E7EB' };
     return (
         <span
             style={{
@@ -116,9 +105,9 @@ const StatusBadge = ({ status }) => {
                 borderRadius: '999px',
                 fontSize: '12px',
                 fontWeight: 600,
-                backgroundColor: isLeave ? '#FFF7ED' : '#F0FDF4',
-                color: isLeave ? '#EA580C' : '#16A34A',
-                border: `1px solid ${isLeave ? '#FED7AA' : '#BBF7D0'}`,
+                backgroundColor: style.bg,
+                color: style.color,
+                border: `1px solid ${style.border}`,
                 letterSpacing: '0.02em',
                 whiteSpace: 'nowrap',
             }}
@@ -128,30 +117,26 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-const Employees = () => {
+const HRAttendance = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
 
     const sidebarItems = [
-        { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard/hr' },
-        { label: 'Employees', icon: Users, active: true, path: '/dashboard/hr/employees' },
-        { label: 'Attendance', icon: Calendar, path: '/dashboard/hr/attendance' },
-        { label: 'Leave Management', icon: ClipboardList, path: '/dashboard/hr/leaves' },
-        { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
-        { label: 'Payslip', icon: FileText, path: '/dashboard/hr/payslips' },
-        { label: 'Notifications', icon: Bell, path: '/dashboard/hr/notifications' },
+        { label: 'Dashboard',       icon: LayoutDashboard, path: '/dashboard/hr' },
+        { label: 'Employees',       icon: Users,           path: '/dashboard/hr/employees' },
+        { label: 'Attendance',      icon: Calendar,        path: '/dashboard/hr/attendance', active: true },
+        { label: 'Leave Management',icon: ClipboardList,   path: '/dashboard/hr/leaves' },
+        { label: 'Payroll',         icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
+        { label: 'Payslip',         icon: FileText,        path: '/dashboard/hr/payslips' },
+        { label: 'Notifications',   icon: Bell,            path: '/dashboard/hr/notifications' },
     ];
 
-    const filtered = MOCK_EMPLOYEES.filter((emp) => {
-        const term = searchTerm.toLowerCase();
-        return (
-            emp.name.toLowerCase().includes(term) ||
-            emp.email.toLowerCase().includes(term) ||
-            emp.id.toLowerCase().includes(term) ||
-            emp.department.toLowerCase().includes(term) ||
-            emp.role.toLowerCase().includes(term)
-        );
-    });
+    const filtered = MOCK_ATTENDANCE.filter((rec) =>
+        rec.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const [checkInHovered, setCheckInHovered] = useState(false);
+    const [checkOutHovered, setCheckOutHovered] = useState(false);
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F5F7FB', fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
@@ -206,38 +191,112 @@ const Employees = () => {
             {/* ── Main Content ── */}
             <main style={{ flex: 1, marginLeft: '240px', padding: '36px 40px' }}>
 
+                {/* Top Header Bar */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    gap: '16px',
+                    marginBottom: '28px',
+                }}>
+                    {/* Notification Bell */}
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        backgroundColor: '#fff',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    }}>
+                        <Bell size={18} color="#6B7280" />
+                    </div>
+
+                    {/* User Profile */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: '#EEF2FF',
+                            color: '#4F46E5',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: '14px',
+                        }}>JD</div>
+                        <div>
+                            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#111827' }}>John Doe</p>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>HR Manager</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Page Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
                     <div>
                         <h2 style={{ fontSize: '26px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.2 }}>
-                            Employees
+                            Attendance Tracking
                         </h2>
                         <p style={{ fontSize: '14px', color: '#6B7280', marginTop: '6px' }}>
-                            {filtered.length} total employees
+                            Track daily attendance and working hours
                         </p>
                     </div>
-                    <button
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '10px 20px',
-                            backgroundColor: '#2563EB',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '10px',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 8px rgba(37,99,235,0.3)',
-                            transition: 'background 0.15s',
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1D4ED8'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-                    >
-                        <Plus size={18} />
-                        Add Employee
-                    </button>
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        {/* Check In */}
+                        <button
+                            onMouseEnter={() => setCheckInHovered(true)}
+                            onMouseLeave={() => setCheckInHovered(false)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 20px',
+                                backgroundColor: checkInHovered ? '#15803D' : '#16A34A',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '10px',
+                                fontWeight: 600,
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
+                                transition: 'background 0.15s',
+                                fontFamily: "'Inter', 'Segoe UI', sans-serif",
+                            }}
+                        >
+                            <LogIn size={18} />
+                            Check In
+                        </button>
+                        {/* Check Out */}
+                        <button
+                            onMouseEnter={() => setCheckOutHovered(true)}
+                            onMouseLeave={() => setCheckOutHovered(false)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 20px',
+                                backgroundColor: checkOutHovered ? '#B91C1C' : '#DC2626',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '10px',
+                                fontWeight: 600,
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 8px rgba(220,38,38,0.3)',
+                                transition: 'background 0.15s',
+                                fontFamily: "'Inter', 'Segoe UI', sans-serif",
+                            }}
+                        >
+                            <LogOut size={18} />
+                            Check Out
+                        </button>
+                    </div>
                 </div>
 
                 {/* Search Bar */}
@@ -283,10 +342,10 @@ const Employees = () => {
                             {/* Table Head */}
                             <thead>
                                 <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                                    {['ID', 'EMPLOYEE', 'DEPARTMENT', 'ROLE', 'STATUS', 'JOIN DATE', 'ACTIONS'].map((col, i) => (
+                                    {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map((col, i) => (
                                         <th key={i} style={{
                                             padding: '14px 20px',
-                                            textAlign: i === 6 ? 'center' : 'left',
+                                            textAlign: 'left',
                                             fontSize: '12px',
                                             fontWeight: 600,
                                             color: '#6B7280',
@@ -304,15 +363,15 @@ const Employees = () => {
                             <tbody>
                                 {filtered.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px' }}>
-                                            No employees found matching your search.
+                                        <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#9CA3AF', fontSize: '14px' }}>
+                                            No records found matching your search.
                                         </td>
                                     </tr>
                                 ) : (
-                                    filtered.map((emp, idx) => {
+                                    filtered.map((rec, idx) => {
                                         const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
                                         return (
-                                            <TableRow key={emp.id} emp={emp} avatarColor={avatarColor} />
+                                            <AttendanceRow key={rec.id} rec={rec} avatarColor={avatarColor} />
                                         );
                                     })
                                 )}
@@ -325,8 +384,8 @@ const Employees = () => {
     );
 };
 
-/* ── Table Row with hover state ── */
-const TableRow = ({ emp, avatarColor }) => {
+/* ── Attendance Table Row ── */
+const AttendanceRow = ({ rec, avatarColor }) => {
     const [hovered, setHovered] = useState(false);
 
     return (
@@ -339,12 +398,7 @@ const TableRow = ({ emp, avatarColor }) => {
                 transition: 'background 0.12s',
             }}
         >
-            {/* ID */}
-            <td style={{ padding: '16px 20px', fontSize: '13px', fontWeight: 600, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-                {emp.id}
-            </td>
-
-            {/* Employee (Avatar + Name + Email) */}
+            {/* Employee (Avatar + Name) */}
             <td style={{ padding: '16px 20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
@@ -360,74 +414,38 @@ const TableRow = ({ emp, avatarColor }) => {
                         fontSize: '14px',
                         flexShrink: 0,
                     }}>
-                        {getInitials(emp.name)}
+                        {getInitials(rec.name)}
                     </div>
-                    <div>
-                        <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{emp.name}</p>
-                        <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#6B7280' }}>{emp.email}</p>
-                    </div>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{rec.name}</p>
                 </div>
             </td>
 
-            {/* Department */}
+            {/* Date */}
             <td style={{ padding: '16px 20px', fontSize: '14px', color: '#374151', whiteSpace: 'nowrap' }}>
-                {emp.department}
+                {rec.date}
             </td>
 
-            {/* Role */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: '#374151', whiteSpace: 'nowrap' }}>
-                {emp.role}
+            {/* Check In */}
+            <td style={{ padding: '16px 20px', fontSize: '14px', color: rec.checkIn === '—' ? '#9CA3AF' : '#374151', whiteSpace: 'nowrap' }}>
+                {rec.checkIn}
+            </td>
+
+            {/* Check Out */}
+            <td style={{ padding: '16px 20px', fontSize: '14px', color: rec.checkOut === '—' ? '#9CA3AF' : '#374151', whiteSpace: 'nowrap' }}>
+                {rec.checkOut}
+            </td>
+
+            {/* Hours */}
+            <td style={{ padding: '16px 20px', fontSize: '14px', color: rec.hours === '—' ? '#9CA3AF' : '#374151', whiteSpace: 'nowrap', fontWeight: rec.hours !== '—' ? 600 : 400 }}>
+                {rec.hours}
             </td>
 
             {/* Status */}
             <td style={{ padding: '16px 20px' }}>
-                <StatusBadge status={emp.status} />
-            </td>
-
-            {/* Join Date */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: '#6B7280', whiteSpace: 'nowrap' }}>
-                {formatDate(emp.joinDate)}
-            </td>
-
-            {/* Actions */}
-            <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <ActionIcon Icon={Eye} hoverColor="#2563EB" title="View" />
-                    <ActionIcon Icon={Pencil} hoverColor="#16A34A" title="Edit" />
-                    <ActionIcon Icon={Trash2} hoverColor="#DC2626" title="Delete" isDelete />
-                </div>
+                <StatusBadge status={rec.status} />
             </td>
         </tr>
     );
 };
 
-/* ── Action Icon Button ── */
-const ActionIcon = ({ Icon, hoverColor, title, isDelete }) => {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <button
-            title={title}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            onClick={() => alert(`${title} action clicked`)}
-            style={{
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '8px',
-                border: '1px solid #E5E7EB',
-                backgroundColor: hovered ? (isDelete ? '#FEF2F2' : '#F0F9FF') : '#fff',
-                color: hovered ? hoverColor : '#9CA3AF',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                padding: 0,
-            }}
-        >
-            <Icon size={15} />
-        </button>
-    );
-};
-
-export default Employees;
+export default HRAttendance;
