@@ -12,6 +12,10 @@ import Attendance from '../pages/Attendance.jsx';
 import LeaveManagement from '../pages/LeaveManagement.jsx';
 import PayslipsPage from '../pages/PayslipsPage.jsx';
 import NotificationsPage from '../pages/NotificationsPage.jsx';
+import Employees from '../pages/Employees.jsx';
+import HRAttendance from '../pages/HRAttendance.jsx';
+import HRLeaveManagement from '../pages/HRLeaveManagement.jsx';
+import HRPayrollManagement from '../pages/HRPayrollManagement.jsx';
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
 import DashboardLayout from '../components/common/DashboardLayout.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
@@ -112,6 +116,38 @@ export default function AppRoutes() {
                 element={
                     <HRRoute>
                         <HRDashboard />
+                    </HRRoute>
+                }
+            />
+            <Route
+                path="/dashboard/hr/employees"
+                element={
+                    <HRRoute>
+                        <Employees />
+                    </HRRoute>
+                }
+            />
+            <Route
+                path="/dashboard/hr/attendance"
+                element={
+                    <HRRoute>
+                        <HRAttendance />
+                    </HRRoute>
+                }
+            />
+            <Route
+                path="/dashboard/hr/leaves"
+                element={
+                    <HRRoute>
+                        <HRLeaveManagement />
+                    </HRRoute>
+                }
+            />
+            <Route
+                path="/dashboard/hr/payroll"
+                element={
+                    <HRRoute>
+                        <HRPayrollManagement />
                     </HRRoute>
                 }
             />
