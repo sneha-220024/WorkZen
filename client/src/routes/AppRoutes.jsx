@@ -11,6 +11,7 @@ import Settings from '../pages/Settings.jsx';
 import Attendance from '../pages/Attendance.jsx';
 import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
 import LeaveManagement from '../pages/LeaveManagement.jsx';
+import Payslips from '../pages/Payslips.jsx';
 import PayslipsPage from '../pages/PayslipsPage.jsx';
 import NotificationsPage from '../pages/NotificationsPage.jsx';
 import Employees from '../pages/Employees.jsx';
@@ -22,6 +23,8 @@ import DashboardLayout from '../components/common/DashboardLayout.jsx';
 import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
+import HRLayout from '../components/common/HRLayout.jsx';
+import HRNotificationsPanel from '../components/notifications/HRNotificationsPanel.jsx';
 
 export default function AppRoutes() {
     return (
@@ -113,46 +116,23 @@ export default function AppRoutes() {
                 />
             </Route>
 
+
             <Route
                 path="/dashboard/hr"
                 element={
                     <HRRoute>
-                        <HRDashboard />
+                        <HRLayout />
                     </HRRoute>
                 }
-            />
-            <Route
-                path="/dashboard/hr/employees"
-                element={
-                    <HRRoute>
-                        <Employees />
-                    </HRRoute>
-                }
-            />
-            <Route
-                path="/dashboard/hr/attendance"
-                element={
-                    <HRRoute>
-                        <HRAttendance />
-                    </HRRoute>
-                }
-            />
-            <Route
-                path="/dashboard/hr/leaves"
-                element={
-                    <HRRoute>
-                        <HRLeaveManagement />
-                    </HRRoute>
-                }
-            />
-            <Route
-                path="/dashboard/hr/payroll"
-                element={
-                    <HRRoute>
-                        <HRPayrollManagement />
-                    </HRRoute>
-                }
-            />
+            >
+                <Route index element={<HRDashboard />} />
+                <Route path="employees" element={<Employees />} />
+                <Route path="attendance" element={<HRAttendance />} />
+                <Route path="leaves" element={<HRLeaveManagement />} />
+                <Route path="payroll" element={<HRPayrollManagement />} />
+                <Route path="payslips" element={<Payslips />} />
+                <Route path="notifications" element={<HRNotificationsPanel />} />
+            </Route>
         </Routes>
     );
 }

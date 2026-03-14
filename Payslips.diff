@@ -1,0 +1,257 @@
+﻿diff --git a/client/src/pages/Payslips.jsx b/client/src/pages/Payslips.jsx
+index a73de60..500edbc 100644
+--- a/client/src/pages/Payslips.jsx
++++ b/client/src/pages/Payslips.jsx
+@@ -1,29 +1,232 @@
+-import React from 'react';
+-import { FileText, Construction } from 'lucide-react';
++import React, { useState } from 'react';
++import { 
++    Search, 
++    Download, 
++    Eye, 
++    FileText, 
++    Filter,
++    MoreHorizontal,
++    DollarSign,
++    Calendar,
++    ArrowRight,
++    CheckCircle2
++} from 'lucide-react';
++
++// --- Mock Data ---
++const EMPLOYEES = [
++    {
++        id: 'EMP001',
++        name: 'Sarah Johnson',
++        role: 'Senior Developer',
++        department: 'Engineering',
++        baseSalary: '$5,200',
++        allowance: '$800',
++        tax: '$450',
++        netPay: '$5,550',
++        status: 'Generated',
++        avatar: { bg: '#EEF2FF', text: '#4F46E5' }
++    },
++    {
++        id: 'EMP002',
++        name: 'Mike Chen',
++        role: 'UI/UX Lead',
++        department: 'Design',
++        baseSalary: '$4,800',
++        allowance: '$650',
++        tax: '$410',
++        netPay: '$5,040',
++        status: 'Generated',
++        avatar: { bg: '#FFF7ED', text: '#EA580C' }
++    },
++    {
++        id: 'EMP003',
++        name: 'Emily Davis',
++        role: 'Marketing Manager',
++        department: 'Marketing',
++        baseSalary: '$4,500',
++        allowance: '$500',
++        tax: '$380',
++        netPay: '$4,620',
++        status: 'Pending',
++        avatar: { bg: '#F0FDF4', text: '#16A34A' }
++    },
++    {
++        id: 'EMP004',
++        name: 'Alex Kim',
++        role: 'HR Specialist',
++        department: 'HR',
++        baseSalary: '$4,200',
++        allowance: '$400',
++        tax: '$350',
++        netPay: '$4,250',
++        status: 'Generated',
++        avatar: { bg: '#FDF2F8', text: '#DB2777' }
++    },
++    {
++        id: 'EMP005',
++        name: 'Lisa Wang',
++        role: 'Accountant',
++        department: 'Finance',
++        baseSalary: '$4,600',
++        allowance: '$550',
++        tax: '$390',
++        netPay: '$4,760',
++        status: 'Generated',
++        avatar: { bg: '#EFF6FF', text: '#2563EB' }
++    },
++    {
++        id: 'EMP006',
++        name: 'James Brown',
++        role: 'DevOps Engineer',
++        department: 'Engineering',
++        baseSalary: '$5,000',
++        allowance: '$700',
++        tax: '$430',
++        netPay: '$5,270',
++        status: 'Pending',
++        avatar: { bg: '#F5F3FF', text: '#7C3AED' }
++    }
++];
++
++const getInitials = (name) => {
++    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
++};
+ 
+ const Payslips = () => {
++    const [searchTerm, setSearchTerm] = useState('');
++
++    const filteredEmployees = EMPLOYEES.filter(emp => 
++        emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
++        emp.department.toLowerCase().includes(searchTerm.toLowerCase())
++    );
++
+     return (
+-        <div className="h-[calc(100vh-160px)] flex flex-col items-center justify-center text-center p-8 animate-in fade-in duration-700">
+-            <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-6 shadow-xl shadow-primary/5 relative">
+-                <div className="absolute -top-2 -right-2 bg-amber-500 text-white p-2 rounded-full shadow-lg">
+-                    <Construction size={18} />
++        <div className="flex flex-col min-h-full bg-[#f8fafc] font-inter animate-in fade-in duration-500">
++            {/* Page Header */}
++            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
++                <div>
++                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Payslip Generation</h1>
++                    <p className="text-slate-500 mt-1">Manage and generate monthly employee payslips</p>
++                </div>
++                
++                <div className="flex items-center gap-3">
++                    <div className="relative">
++                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
++                        <input 
++                            type="text" 
++                            placeholder="Search employee..." 
++                            value={searchTerm}
++                            onChange={(e) => setSearchTerm(e.target.value)}
++                            className="bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm w-full md:w-64 shadow-sm"
++                        />
++                    </div>
++                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors shadow-sm text-sm font-semibold">
++                        <Filter size={18} />
++                        Filter
++                    </button>
++                    <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 text-sm font-semibold">
++                        <Calendar size={18} />
++                        March 2026
++                    </button>
+                 </div>
+-                <FileText className="text-primary" size={48} />
+             </div>
+-            
+-            <h1 className="text-4xl font-bold text-slate-900 font-sora mb-4">
+-                My Payslips
+-            </h1>
+-            
+-            <p className="text-slate-500 max-w-md text-lg font-medium leading-relaxed">
+-                Our payroll visualization module is currently under construction. You will be able to view and download your payslips here very soon.
+-            </p>
+-
+-            <div className="mt-12 flex items-center gap-2 text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">
+-                <span className="w-8 h-[2px] bg-slate-100"></span>
+-                Coming Soon
+-                <span className="w-8 h-[2px] bg-slate-100"></span>
++
++            {/* Content Grid */}
++            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
++                {filteredEmployees.map((emp) => (
++                    <div key={emp.id} className="bg-white border border-slate-100 rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
++                        <div className="p-6 pb-4">
++                            {/* Card Top: Employee Info */}
++                            <div className="flex items-start justify-between mb-6">
++                                <div className="flex items-center gap-4">
++                                    <div 
++                                        style={{ backgroundColor: emp.avatar.bg, color: emp.avatar.text }}
++                                        className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shadow-inner"
++                                    >
++                                        {getInitials(emp.name)}
++                                    </div>
++                                    <div>
++                                        <h3 className="text-lg font-bold text-slate-900 leading-tight">{emp.name}</h3>
++                                        <p className="text-sm font-medium text-slate-500 mt-0.5">{emp.role}</p>
++                                        <div className="inline-flex items-center mt-2 px-2 py-0.5 bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider rounded-md border border-slate-100">
++                                            {emp.department}
++                                        </div>
++                                    </div>
++                                </div>
++                                <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors">
++                                    <MoreHorizontal size={20} />
++                                </button>
++                            </div>
++
++                            {/* Salary Details */}
++                            <div className="bg-slate-50/50 rounded-2xl p-5 mb-6 border border-slate-100/50">
++                                <div className="grid grid-cols-2 gap-y-4">
++                                    <div>
++                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
++                                            <DollarSign size={12} /> Base Salary
++                                        </p>
++                                        <p className="text-base font-bold text-slate-800">{emp.baseSalary}</p>
++                                    </div>
++                                    <div>
++                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
++                                            <ArrowRight size={12} className="text-blue-400" /> Allowance
++                                        </p>
++                                        <p className="text-base font-bold text-slate-800">{emp.allowance}</p>
++                                    </div>
++                                    <div>
++                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
++                                            <Filter size={12} className="text-red-400" /> Tax Deductible
++                                        </p>
++                                        <p className="text-base font-bold text-red-500">{emp.tax}</p>
++                                    </div>
++                                    <div>
++                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
++                                            <CheckCircle2 size={12} className="text-emerald-500" /> Net Pay
++                                        </p>
++                                        <p className="text-lg font-black text-slate-950 underline decoration-emerald-200 decoration-4 underline-offset-4">{emp.netPay}</p>
++                                    </div>
++                                </div>
++                            </div>
++
++                            {/* Status and Action Buttons */}
++                            <div className="flex flex-col gap-3">
++                                <div className="flex items-center justify-between px-1">
++                                    <div className={`flex items-center gap-1.5 text-xs font-bold ${emp.status === 'Generated' ? 'text-emerald-600' : 'text-amber-600'}`}>
++                                        <span className={`w-2 h-2 rounded-full ${emp.status === 'Generated' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
++                                        {emp.status}
++                                    </div>
++                                    <button className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-xs font-bold transition-colors group/btn">
++                                        <Eye size={14} className="group-hover/btn:scale-110 transition-transform" />
++                                        Preview
++                                    </button>
++                                </div>
++                                
++                                <div className="grid grid-cols-2 gap-3 mt-1">
++                                    <button className="flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-600/10 font-bold text-xs">
++                                        <FileText size={16} />
++                                        Generate
++                                    </button>
++                                    <button className="flex items-center justify-center gap-2 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md shadow-slate-900/10 font-bold text-xs">
++                                        <Download size={16} />
++                                        PDF
++                                    </button>
++                                </div>
++                            </div>
++                        </div>
++                    </div>
++                ))}
+             </div>
++            
++            {/* Empty State */}
++            {filteredEmployees.length === 0 && (
++                <div className="flex-1 flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200 mt-6">
++                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
++                        <Search size={32} />
++                    </div>
++                    <h3 className="text-xl font-bold text-slate-900">No employees found</h3>
++                    <p className="text-slate-500 mt-2">Try adjusting your search terms</p>
++                </div>
++            )}
+         </div>
+     );
+ };
