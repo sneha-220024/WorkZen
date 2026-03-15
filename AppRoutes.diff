@@ -1,0 +1,25 @@
+﻿diff --git a/client/src/routes/AppRoutes.jsx b/client/src/routes/AppRoutes.jsx
+index 5fdb446..9f263f3 100644
+--- a/client/src/routes/AppRoutes.jsx
++++ b/client/src/routes/AppRoutes.jsx
+@@ -11,6 +11,7 @@ import Settings from '../pages/Settings.jsx';
+ import Attendance from '../pages/Attendance.jsx';
+ import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
+ import LeaveManagement from '../pages/LeaveManagement.jsx';
++import Payslips from '../pages/Payslips.jsx';
+ import PayslipsPage from '../pages/PayslipsPage.jsx';
+ import NotificationsPage from '../pages/NotificationsPage.jsx';
+ import Employees from '../pages/Employees.jsx';
+@@ -146,10 +147,10 @@ export default function AppRoutes() {
+                 }
+             />
+             <Route
+-                path="/dashboard/hr/payroll"
++                path="/dashboard/hr/payslips"
+                 element={
+                     <HRRoute>
+-                        <HRPayrollManagement />
++                        <Payslips />
+                     </HRRoute>
+                 }
+             />
