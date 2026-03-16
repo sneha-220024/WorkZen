@@ -1,55 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Button from '../components/common/Button.jsx';
 import LeaveHistoryTable from '../components/leave/LeaveHistoryTable.jsx';
 import LeaveApplicationForm from '../components/leave/LeaveApplicationForm.jsx';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext.jsx';
+import toast from 'react-hot-toast';
 
 const LeaveManagement = () => {
+    const { user } = useContext(AuthContext);
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+    const [leaves, setLeaves] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Initial dummy data
-    const [leaves, setLeaves] = useState([
-        {
-            id: '1',
-            type: 'Vacation',
-            fromDate: '2026-03-20',
-            toDate: '2026-03-22',
-            days: 3,
-            appliedOn: '2026-03-10',
-            status: 'Pending'
-        },
-        {
-            id: '2',
-            type: 'Sick Leave',
-            fromDate: '2026-03-06',
-            toDate: '2026-03-06',
-            days: 1,
-            appliedOn: '2026-03-05',
-            status: 'Approved'
-        },
-        {
-            id: '3',
-            type: 'Personal Leave',
-            fromDate: '2026-02-14',
-            toDate: '2026-02-14',
-            days: 1,
-            appliedOn: '2026-02-10',
-            status: 'Approved'
-        },
-        {
-            id: '4',
-            type: 'Vacation',
-            fromDate: '2025-12-24',
-            toDate: '2026-01-02',
-            days: 10,
-            appliedOn: '2025-12-01',
-            status: 'Approved'
+    const fetchLeaves = async () => {
+        try {
+            setLoading(true);
+            const token = user?.token;
+            if (!token) return;
+            const res = await axios.get('http://localhost:5000/api/employee/leaves/history', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.success) {
+                setLeaves(res.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching leaves:', error);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
 
-    const handleApplyLeave = (newLeave) => {
-        // Add new leave to the top of the list
-        setLeaves([newLeave, ...leaves]);
-        setIsApplyModalOpen(false);
+    useEffect(() => {
+        fetchLeaves();
+    }, [user]);
+
+    const handleApplyLeave = async (leaveData) => {
+        try {
+            const token = user?.token;
+            if (!token) return;
+
+            // map fields if necessary
+            const payload = {
+                leaveType: leaveData.type,
+                startDate: leaveData.fromDate,
+                endDate: leaveData.toDate,
+                reason: leaveData.reason
+            };
+
+            const res = await axios.post('http://localhost:5000/api/employee/leaves/apply', payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.data.success) {
+                toast.success('Leave application submitted successfully');
+                fetchLeaves();
+                setIsApplyModalOpen(false);
+            }
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || 
+                            (error.response?.data?.errors ? error.response.data.errors[0].message : null) || 
+                            'Failed to submit leave application';
+            toast.error(errorMsg);
+        }
     };
 
     return (

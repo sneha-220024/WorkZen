@@ -39,16 +39,23 @@ export default function Attendance() {
             setLoading(true);
             const token = getToken();
             if (!token) return;
-            const res = await axios.get('http://localhost:5000/api/attendance', {
+            const res = await axios.get('http://localhost:5000/api/employee/attendance/history', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const records = res.data.data || [];
             setAttendanceRecords(records);
-            const today = getTodayLocal();
-            const todayRec = records.find(r => r.date === today);
+            
+            // More robust today matching
+            const today = new Date();
+            const todayDateStr = today.toLocaleDateString();
+            const todayRec = records.find(r => new Date(r.date).toLocaleDateString() === todayDateStr);
+            
             setTodayRecord(todayRec || null);
         } catch (error) {
             console.error('Error fetching attendance:', error);
+            if (error.response?.status === 404) {
+                toast.error('Employee profile not found. Please contact HR.');
+            }
         } finally {
             setLoading(false);
         }
@@ -60,7 +67,7 @@ export default function Attendance() {
         try {
             setCheckInLoading(true);
             const res = await axios.post(
-                'http://localhost:5000/api/attendance/check-in',
+                'http://localhost:5000/api/employee/attendance/check-in',
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -79,7 +86,7 @@ export default function Attendance() {
         try {
             setCheckOutLoading(true);
             const res = await axios.post(
-                'http://localhost:5000/api/attendance/check-out',
+                'http://localhost:5000/api/employee/attendance/check-out',
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -107,8 +114,8 @@ export default function Attendance() {
         return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const hasCheckedIn = !!(todayRecord?.checkIn);
-    const hasCheckedOut = !!(todayRecord?.checkOut);
+    const hasCheckedIn = !!(todayRecord?.checkInTime);
+    const hasCheckedOut = !!(todayRecord?.checkOutTime);
     const canCheckIn = !hasCheckedIn;
     const canCheckOut = hasCheckedIn && !hasCheckedOut;
 
@@ -133,15 +140,15 @@ export default function Attendance() {
                         <div className="flex flex-wrap gap-6">
                             <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
                                 <span className="text-emerald-500"><CheckCircle2 size={16} /></span>
-                                Check In: <span className="text-slate-900">{formatTime(todayRecord?.checkIn)}</span>
+                                Check In: <span className="text-slate-900">{formatTime(todayRecord?.checkInTime)}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
                                 <span className="text-red-500"><XCircle size={16} /></span>
-                                Check Out: <span className="text-slate-900">{formatTime(todayRecord?.checkOut)}</span>
+                                Check Out: <span className="text-slate-900">{formatTime(todayRecord?.checkOutTime)}</span>
                             </div>
-                            {todayRecord?.hoursWorked > 0 && (
+                            {todayRecord?.totalHours > 0 && (
                                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 bg-blue-50 px-3 py-1 rounded-lg text-blue-700">
-                                    Total: {todayRecord.hoursWorked}h
+                                    Total: {todayRecord.totalHours}h
                                 </div>
                             )}
                         </div>
@@ -194,10 +201,10 @@ export default function Attendance() {
                             ) : (
                                 attendanceRecords.map((record) => (
                                     <tr key={record._id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-5 text-sm font-bold text-slate-900">{record.date}</td>
-                                        <td className="px-8 py-5 text-sm font-medium text-slate-500">{formatTime(record.checkIn)}</td>
-                                        <td className="px-8 py-5 text-sm font-medium text-slate-500">{formatTime(record.checkOut)}</td>
-                                        <td className="px-8 py-5 text-sm font-bold text-slate-900">{record.hoursWorked > 0 ? `${record.hoursWorked}h` : '-'}</td>
+                                        <td className="px-8 py-5 text-sm font-bold text-slate-900">{new Date(record.date).toLocaleDateString()}</td>
+                                        <td className="px-8 py-5 text-sm font-medium text-slate-500">{formatTime(record.checkInTime)}</td>
+                                        <td className="px-8 py-5 text-sm font-medium text-slate-500">{formatTime(record.checkOutTime)}</td>
+                                        <td className="px-8 py-5 text-sm font-bold text-slate-900">{record.totalHours > 0 ? `${record.totalHours}h` : '-'}</td>
                                         <td className="px-8 py-5 text-sm">{getStatusBadge(record.status)}</td>
                                     </tr>
                                 ))

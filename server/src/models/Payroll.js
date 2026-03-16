@@ -1,1 +1,0 @@
-﻿// Payroll Mongoose model

@@ -9,7 +9,6 @@ import Profile from '../pages/Profile.jsx';
 import Documents from '../pages/Documents.jsx';
 import Settings from '../pages/Settings.jsx';
 import Attendance from '../pages/Attendance.jsx';
-import EmployeeDashboardStats from '../pages/EmployeeDashboardStats.jsx';
 import LeaveManagement from '../pages/LeaveManagement.jsx';
 import Payslips from '../pages/Payslips.jsx';
 import PayslipsPage from '../pages/PayslipsPage.jsx';
@@ -141,5 +140,6 @@ export default function AppRoutes() {
 function DashboardRedirect() {
     const { user } = useContext(AuthContext);
     if (!user) return <Navigate to="/login" />;
-    return <Navigate to={user.role === 'hr' ? '/dashboard/hr' : '/dashboard/employee'} />;
+    const role = user.role?.toLowerCase();
+    return <Navigate to={role === 'hr' ? '/dashboard/hr' : '/dashboard/employee'} />;
 }

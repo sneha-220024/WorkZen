@@ -1,75 +1,87 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import Button from '../components/common/Button.jsx';
 import {
     Calendar,
     Clock,
     ArrowUpRight,
-    CheckCircle2,
-    FileText,
-    User as UserIcon,
     Bell,
     TrendingUp,
     MoreVertical
 } from 'lucide-react';
-import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
+import axios from 'axios';
 
 const EmployeeDashboard = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [stats, setStats] = useState([]);
+    const [activities, setActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const [attendance] = useState({
+    const [attendanceStatus, setAttendanceStatus] = useState({
         checkedIn: false,
         checkInTime: null,
-        checkOutTime: null,
     });
-    const stats = [
-        {
-            label: 'Present Days',
-            count: '22',
-            description: 'This month',
-            icon: Clock,
-            color: 'bg-blue-500',
-            textColor: 'text-blue-600',
-            bgColor: 'bg-blue-50'
-        },
-        {
-            label: 'Leave Balance',
-            count: '12',
-            description: 'Days remaining',
-            icon: Calendar,
-            color: 'bg-emerald-500',
-            textColor: 'text-emerald-600',
-            bgColor: 'bg-emerald-50'
-        },
-        {
-            label: 'Overtime Hours',
-            count: '8.5',
-            description: 'This month',
-            icon: TrendingUp,
-            color: 'bg-orange-500',
-            textColor: 'text-orange-600',
-            bgColor: 'bg-orange-50'
-        },
-        {
-            label: 'Notifications',
-            count: '3',
-            description: 'Unread',
-            icon: Bell,
-            color: 'bg-primary',
-            textColor: 'text-primary',
-            bgColor: 'bg-indigo-50'
-        },
-    ];
 
-    const activities = [
-        { id: 1, type: 'check-in', title: 'Check-in activity', time: '09:05 AM', date: 'Today', icon: Clock, color: 'text-blue-500' },
-        { id: 2, type: 'leave', title: 'Annual Leave approved', time: '02:30 PM', date: 'Yesterday', icon: CheckCircle2, color: 'text-emerald-500' },
-        { id: 3, type: 'payslip', title: 'February Payslip generated', time: '11:15 AM', date: 'Mar 01, 2026', icon: FileText, color: 'text-indigo-500' },
-        { id: 4, type: 'profile', title: 'Profile details updated', time: '10:00 AM', date: 'Feb 25, 2026', icon: UserIcon, color: 'text-orange-500' },
-    ];
+    useEffect(() => {
+        fetchDashboardData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const location = useLocation();
+    const fetchDashboardData = async () => {
+        try {
+            const token = user?.token;
+            if (!token) return;
+
+            const [statsRes, historyRes] = await Promise.all([
+                axios.get('http://localhost:5000/api/employee/dashboard-stats', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:5000/api/employee/attendance/history', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+
+            if (statsRes.data.success) {
+                const s = statsRes.data.data;
+                setStats([
+                    { label: 'Present Days', count: s.presentDays, description: 'This month', icon: Clock, color: 'bg-blue-500', textColor: 'text-blue-600', bgColor: 'bg-blue-50' },
+                    { label: 'Leave Balance', count: s.leaveBalance, description: 'Days remaining', icon: Calendar, color: 'bg-emerald-500', textColor: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+                    { label: 'Overtime Hours', count: s.overtimeHours, description: 'This month', icon: TrendingUp, color: 'bg-orange-500', textColor: 'text-orange-600', bgColor: 'bg-orange-50' },
+                    { label: 'Notifications', count: s.notificationsCount, description: 'Unread', icon: Bell, color: 'bg-primary', textColor: 'text-primary', bgColor: 'bg-indigo-50' },
+                ]);
+            }
+
+            if (historyRes.data.success) {
+                const history = historyRes.data.data;
+                const today = new Date().toISOString().split('T')[0];
+                const todayRec = history.find(r => r.date.startsWith(today));
+                
+                if (todayRec) {
+                    setAttendanceStatus({
+                        checkedIn: !!todayRec.checkInTime && !todayRec.checkOutTime,
+                        checkInTime: todayRec.checkInTime,
+                    });
+                }
+
+                // Map activities
+                const mappedActivities = history.slice(0, 4).map(r => ({
+                    id: r._id,
+                    type: 'check-in',
+                    title: `Checked in at ${new Date(r.checkInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+                    time: new Date(r.checkInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    date: new Date(r.date).toLocaleDateString() === new Date().toLocaleDateString() ? 'Today' : new Date(r.date).toLocaleDateString(),
+                    icon: Clock,
+                    color: 'text-blue-500'
+                }));
+                setActivities(mappedActivities);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -82,13 +94,13 @@ const EmployeeDashboard = () => {
                     <p className="text-slate-500 mt-1 font-medium">Here's your work summary for today</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="gap-2">
+                    <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors">
                         <Calendar size={18} />
-                        March 11, 2026
-                    </Button>
-                    <Button onClick={() => navigate('/dashboard/leaves')} className="shadow-lg shadow-primary/20">
+                        {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </button>
+                    <button onClick={() => navigate('/dashboard/leaves')} className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">
                         Apply for Leave
-                    </Button>
+                    </button>
                 </div>
 
             </div>
@@ -175,29 +187,29 @@ const EmployeeDashboard = () => {
 
                 {/* Quick Shortcuts / Info Card */}
                 <div className="space-y-8">
-                    <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
-                        <div className="absolute -right-6 -top-6 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-500"></div>
+                    <div className="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group" style={{background: 'linear-gradient(135deg, #6366f1 0%, #7c3aed 50%, #4f46e5 100%)'}}>
+                        <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
+                        <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
                         <h3 className="text-lg font-bold font-sora mb-2 relative z-10">Attendance Tracking</h3>
-                        <p className="text-slate-400 text-sm mb-6 relative z-10">You're currently {attendance.checkedIn ? 'checked in' : 'not checked in'}.</p>
+                        <p className="text-indigo-200 text-sm mb-6 relative z-10">You're currently {attendanceStatus.checkedIn ? 'checked in ✓' : 'not checked in'}.</p>
 
-                        {!attendance.checkedIn ? (
-                            <Button
-                                className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold border-none transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                        {!attendanceStatus.checkedIn ? (
+                            <button
+                                className="w-full py-3 bg-white text-indigo-700 hover:bg-indigo-50 font-bold rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-900/30 relative z-10"
                                 onClick={() => navigate('/dashboard/attendance')}
                             >
                                 Check In Now
-                            </Button>
+                            </button>
                         ) : (
-                            <Button
-                                variant="outline"
-                                className="w-full border-slate-700 text-white hover:bg-slate-800 font-bold"
+                            <button
+                                className="w-full py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold rounded-xl border border-white/30 transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10"
                                 onClick={() => navigate('/dashboard/attendance')}
                             >
                                 Check Out
-                            </Button>
+                            </button>
                         )}
 
-                        <p className="text-xs text-slate-500 mt-4 text-center font-medium">System time: 04:23 PM</p>
+                        <p className="text-xs text-indigo-300 mt-4 text-center font-medium relative z-10">System time: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                     </div>
 
                     <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">

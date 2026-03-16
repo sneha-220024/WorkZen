@@ -17,9 +17,12 @@ const RoleRoute = ({ children, allowedRoles }) => {
         return <Navigate to="/login" />;
     }
 
-    if (!allowedRoles.includes(user.role)) {
+    const userRole = user.role?.toLowerCase();
+    const isAllowed = allowedRoles.some(role => role.toLowerCase() === userRole);
+
+    if (!isAllowed) {
         // Redirect to their respective dashboard if they try to access the wrong one
-        const fallback = user.role === 'hr' ? '/dashboard/hr' : '/dashboard/employee';
+        const fallback = userRole === 'hr' ? '/dashboard/hr' : '/dashboard/employee';
         return <Navigate to={fallback} />;
     }
 

@@ -1,75 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-    LayoutDashboard,
-    Users,
-    Calendar,
-    ClipboardList,
-    BadgeDollarSign,
-    FileText,
-    Bell,
-    Search,
-    LogIn,
-    LogOut,
-} from 'lucide-react';
-
-// --- Mock Attendance Data ---
-const MOCK_ATTENDANCE = [
-    {
-        id: 'ATT001',
-        name: 'Sarah Johnson',
-        date: '2026-03-07',
-        checkIn: '09:02 AM',
-        checkOut: '06:15 PM',
-        hours: '9h 13m',
-        status: 'Present',
-    },
-    {
-        id: 'ATT002',
-        name: 'Mike Chen',
-        date: '2026-03-07',
-        checkIn: '08:45 AM',
-        checkOut: '05:30 PM',
-        hours: '8h 45m',
-        status: 'Present',
-    },
-    {
-        id: 'ATT003',
-        name: 'Emily Davis',
-        date: '2026-03-07',
-        checkIn: '09:30 AM',
-        checkOut: '—',
-        hours: '—',
-        status: 'Working',
-    },
-    {
-        id: 'ATT004',
-        name: 'Alex Kim',
-        date: '2026-03-07',
-        checkIn: '—',
-        checkOut: '—',
-        hours: '—',
-        status: 'Absent',
-    },
-    {
-        id: 'ATT005',
-        name: 'Lisa Wang',
-        date: '2026-03-07',
-        checkIn: '08:58 AM',
-        checkOut: '06:00 PM',
-        hours: '9h 02m',
-        status: 'Present',
-    },
-    {
-        id: 'ATT006',
-        name: 'James Brown',
-        date: '2026-03-07',
-        checkIn: '10:15 AM',
-        checkOut: '—',
-        hours: '—',
-        status: 'Late',
-    },
-];
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
+import { Search } from 'lucide-react';
 
 // --- Avatar colors ---
 const AVATAR_COLORS = [
@@ -90,125 +22,148 @@ const getInitials = (name) => {
 // --- Status Badge ---
 const StatusBadge = ({ status }) => {
     const statusStyles = {
-        Present: { bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
-        Working: { bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
-        Absent:  { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA' },
-        Late:    { bg: '#FFF7ED', color: '#EA580C', border: '#FED7AA' },
+        Present: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' },
+        Working: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
+        Absent:  { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
+        Late:    { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' },
     };
-    const style = statusStyles[status] || { bg: '#F3F4F6', color: '#6B7280', border: '#E5E7EB' };
+    const style = statusStyles[status] || { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' };
+    
     return (
-        <span
-            style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '4px 14px',
-                borderRadius: '999px',
-                fontSize: '12px',
-                fontWeight: 600,
-                backgroundColor: style.bg,
-                color: style.color,
-                border: `1px solid ${style.border}`,
-                letterSpacing: '0.02em',
-                whiteSpace: 'nowrap',
-            }}
-        >
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${style.bg} ${style.text} ${style.border}`}>
             {status}
         </span>
     );
 };
 
 const HRAttendance = () => {
-    const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     const [searchTerm, setSearchTerm] = useState('');
+    const [attendanceData, setAttendanceData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const sidebarItems = [
-        { label: 'Dashboard',       icon: LayoutDashboard, path: '/dashboard/hr' },
-        { label: 'Employees',       icon: Users,           path: '/dashboard/hr/employees' },
-        { label: 'Attendance',      icon: Calendar,        path: '/dashboard/hr/attendance', active: true },
-        { label: 'Leave Management',icon: ClipboardList,   path: '/dashboard/hr/leaves' },
-        { label: 'Payroll',         icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
-        { label: 'Payslip',         icon: FileText,        path: '/dashboard/hr/payslips' },
-        { label: 'Notifications',   icon: Bell,            path: '/dashboard/hr/notifications' },
-    ];
+    const fetchAttendance = async () => {
+        try {
+            setIsLoading(true);
+            const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
+            if (!token) return;
 
-    const filtered = MOCK_ATTENDANCE.filter((rec) =>
-        rec.name.toLowerCase().includes(searchTerm.toLowerCase())
+            const response = await axios.get('http://localhost:5000/api/hr/attendance/today', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.data.success) {
+                setAttendanceData(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching attendance", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAttendance();
+    }, []);
+
+    const filtered = attendanceData.filter((rec) =>
+        `${rec.employeeId?.firstName} ${rec.employeeId?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const [checkInHovered, setCheckInHovered] = useState(false);
-    const [checkOutHovered, setCheckOutHovered] = useState(false);
+    const formatTime = (time) => {
+        if (!time) return '—';
+        return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
 
     return (
-        <>
-            {/* Page Header */}
-            <div className="flex justify-between items-start mb-8">
-                <div>
-                    <h2 className="text-[28px] font-bold text-slate-900 leading-tight">
-                        Attendance Tracking
-                    </h2>
-                    <p className="text-sm font-medium text-slate-500 mt-1">
-                        Track daily attendance and working hours
-                    </p>
-                </div>
-                {/* Action Buttons */}
-                <div className="flex gap-4">
-                    {/* Check In */}
-                    <button
-                        className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-green-600/20 hover:bg-green-700 transition-all active:scale-95"
-                    >
-                        <LogIn size={18} />
-                        Check In
-                    </button>
-                    {/* Check Out */}
-                    <button
-                        className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-red-600/20 hover:bg-red-700 transition-all active:scale-95"
-                    >
-                        <LogOut size={18} />
-                        Check Out
-                    </button>
-                </div>
+        <div>
+            <div className="mb-8">
+                <h2 className="text-[28px] font-semibold text-slate-900 mb-1">Attendance Tracking</h2>
+                <p className="text-slate-500 text-sm">Real-time overview of employee check-ins and working hours</p>
             </div>
 
             {/* Search Bar */}
-            <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-[20px] px-6 py-4 max-w-md mb-8 shadow-sm">
-                <Search size={18} className="text-slate-400" />
+            <div className="relative max-w-md mb-8 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                 <input
                     type="text"
                     placeholder="Search employees..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border-none outline-none text-[15px] font-medium text-slate-600 bg-transparent w-full"
+                    className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-sm"
                 />
             </div>
 
             {/* Table Container */}
-            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
-                        {/* Table Head */}
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
                                 {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map((col, i) => (
-                                    <th key={i} className="px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <th key={i} className="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                                         {col}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
-
-                        {/* Table Body */}
                         <tbody className="divide-y divide-slate-50">
-                            {filtered.length === 0 ? (
+                            {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-20 text-center text-slate-400 font-medium">
-                                        No records found matching your search.
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                            Loading records...
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filtered.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-inter">
+                                        No attendance records found for today.
                                     </td>
                                 </tr>
                             ) : (
                                 filtered.map((rec, idx) => {
                                     const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                                    const fullName = rec.employeeId ? `${rec.employeeId.firstName} ${rec.employeeId.lastName}` : 'N/A';
                                     return (
-                                        <AttendanceRow key={rec.id} rec={rec} avatarColor={avatarColor} />
+                                        <tr key={rec._id} className="hover:bg-slate-50/80 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div 
+                                                        style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}
+                                                        className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm"
+                                                    >
+                                                        {getInitials(fullName)}
+                                                    </div>
+                                                    <p className="text-sm font-bold text-slate-900 leading-tight">{fullName}</p>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium text-slate-500">{new Date(rec.date).toLocaleDateString()}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-sm font-semibold ${rec.checkInTime ? 'text-slate-900' : 'text-slate-300'}`}>
+                                                    {formatTime(rec.checkInTime)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-sm font-semibold ${rec.checkOutTime ? 'text-slate-900' : 'text-slate-300'}`}>
+                                                    {formatTime(rec.checkOutTime)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-sm font-bold ${rec.totalHours ? 'text-blue-600' : 'text-slate-300'}`}>
+                                                    {rec.totalHours ? `${rec.totalHours.toFixed(2)}h` : '—'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <StatusBadge status={rec.status} />
+                                            </td>
+                                        </tr>
                                     );
                                 })
                             )}
@@ -216,71 +171,7 @@ const HRAttendance = () => {
                     </table>
                 </div>
             </div>
-        </>
-    );
-};
-
-/* ── Attendance Table Row ── */
-const AttendanceRow = ({ rec, avatarColor }) => {
-    const [hovered, setHovered] = useState(false);
-
-    return (
-        <tr
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                borderBottom: '1px solid #F3F4F6',
-                backgroundColor: hovered ? '#F9FAFB' : '#fff',
-                transition: 'background 0.12s',
-            }}
-        >
-            {/* Employee (Avatar + Name) */}
-            <td style={{ padding: '16px 20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        backgroundColor: avatarColor.bg,
-                        color: avatarColor.text,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 700,
-                        fontSize: '14px',
-                        flexShrink: 0,
-                    }}>
-                        {getInitials(rec.name)}
-                    </div>
-                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{rec.name}</p>
-                </div>
-            </td>
-
-            {/* Date */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: '#374151', whiteSpace: 'nowrap' }}>
-                {rec.date}
-            </td>
-
-            {/* Check In */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: rec.checkIn === '—' ? '#9CA3AF' : '#374151', whiteSpace: 'nowrap' }}>
-                {rec.checkIn}
-            </td>
-
-            {/* Check Out */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: rec.checkOut === '—' ? '#9CA3AF' : '#374151', whiteSpace: 'nowrap' }}>
-                {rec.checkOut}
-            </td>
-
-            {/* Hours */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: rec.hours === '—' ? '#9CA3AF' : '#374151', whiteSpace: 'nowrap', fontWeight: rec.hours !== '—' ? 600 : 400 }}>
-                {rec.hours}
-            </td>
-
-            {/* Status */}
-            <td style={{ padding: '16px 20px' }}>
-                <StatusBadge status={rec.status} />
-            </td>
-        </tr>
+        </div>
     );
 };
 
