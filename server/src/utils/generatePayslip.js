@@ -1,1 +1,0 @@
-﻿// Payslip PDF generation utility

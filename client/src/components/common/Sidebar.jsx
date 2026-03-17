@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
 import { 
@@ -14,8 +14,9 @@ import {
 } from 'lucide-react';
 
 const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
-    const { user, logout } = useContext(AuthContext);
+    const { logout } = useContext(AuthContext);
     const location = useLocation();
+    const navigate = useNavigate();
 
     const menuItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard/employee' },
@@ -89,7 +90,10 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
             {/* Logout Section */}
             <div className="p-4 border-t border-slate-800">
                 <button
-                    onClick={logout}
+                    onClick={() => {
+                        logout();
+                        navigate('/login');
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200"
                 >
                     <LogOut size={20} />
