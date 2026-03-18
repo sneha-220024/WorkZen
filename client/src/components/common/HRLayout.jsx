@@ -10,12 +10,13 @@ import {
     FileText, 
     Bell, 
     Search,
-    User as UserIcon
+    User as UserIcon,
+    LogOut
 } from 'lucide-react';
 import HRNotificationsPanel from '../notifications/HRNotificationsPanel.jsx';
 
 const HRLayout = () => {
-    const { user } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -35,10 +36,15 @@ const HRLayout = () => {
         return !showNotifications && location.pathname === item.path;
     };
 
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
         <div className="flex min-h-screen bg-[#F5F7FB] font-inter">
             {/* Sidebar */}
-            <aside className="w-64 bg-[#1E2640] text-slate-300 flex flex-col fixed h-full z-20">
+            <aside className="w-64 bg-[#1E2640] text-slate-300 flex flex-col fixed h-full z-20 shadow-xl">
                 <div className="p-8">
                     <h1 className="font-sora font-bold text-2xl text-white">Work<span className="text-blue-400">Zen</span></h1>
                 </div>
@@ -102,17 +108,31 @@ const HRLayout = () => {
                                 <UserIcon size={22} />
                             </div>
                         </div>
+
+                        <div className="h-8 w-px bg-slate-200"></div>
+
+                        <button 
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 font-bold group border border-transparent"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                <LogOut size={20} />
+                            </div>
+                            <span className="text-sm">Logout</span>
+                        </button>
                     </div>
                 </header>
 
-                {/* Content with conditional Notifications Panel */}
-                <div className="p-8 flex-1 flex flex-col">
+                {/* Content Area */}
+                <div className="flex-1 flex flex-col">
                     {showNotifications ? (
-                        <div className="flex-1" style={{ height: 'calc(100vh - 144px)' }}>
+                        <div className="p-8 flex-1" style={{ height: 'calc(100vh - 144px)' }}>
                             <HRNotificationsPanel />
                         </div>
                     ) : (
-                        <Outlet />
+                        <div className="p-8">
+                             <Outlet />
+                        </div>
                     )}
                 </div>
             </main>

@@ -41,12 +41,12 @@ const LeaveHistoryTable = ({ leaves }) => {
                     <tbody>
                         {leaves && leaves.length > 0 ? (
                             leaves.map((leave) => (
-                                <tr key={leave.id} className="border-b border-border-color hover:bg-background/50 transition-colors">
-                                    <td className="p-4 text-text-primary font-medium">{leave.type}</td>
-                                    <td className="p-4 text-text-secondary">{formatDate(leave.fromDate)}</td>
-                                    <td className="p-4 text-text-secondary">{formatDate(leave.toDate)}</td>
+                                <tr key={leave._id || leave.id} className="border-b border-border-color hover:bg-background/50 transition-colors">
+                                    <td className="p-4 text-text-primary font-medium">{leave.leaveType || leave.type}</td>
+                                    <td className="p-4 text-text-secondary">{formatDate(leave.startDate || leave.fromDate)}</td>
+                                    <td className="p-4 text-text-secondary">{formatDate(leave.endDate || leave.toDate)}</td>
                                     <td className="p-4 text-text-primary text-center font-medium">{leave.days}</td>
-                                    <td className="p-4 text-text-secondary">{formatDate(leave.appliedOn)}</td>
+                                    <td className="p-4 text-text-secondary">{formatDate(leave.createdAt || leave.appliedAt || leave.appliedOn)}</td>
                                     <td className="p-4">{getStatusBadge(leave.status)}</td>
                                 </tr>
                             ))

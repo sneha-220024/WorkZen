@@ -1,86 +1,14 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
+import EmployeeModal from '../components/employee/EmployeeModal.jsx';
 import {
-    LayoutDashboard,
-    Users,
-    Calendar,
-    ClipboardList,
-    BadgeDollarSign,
-    FileText,
-    Bell,
     Search,
     Plus,
     Eye,
     Pencil,
-    Trash2,
+    Trash2
 } from 'lucide-react';
-
-// --- Mock Employee Data ---
-const MOCK_EMPLOYEES = [
-    {
-        id: 'EMP001',
-        name: 'Sarah Johnson',
-        email: 'sarah@workzen.com',
-        department: 'Engineering',
-        role: 'Senior Developer',
-        status: 'Active',
-        joinDate: '2023-01-15',
-    },
-    {
-        id: 'EMP002',
-        name: 'Mike Chen',
-        email: 'mike@workzen.com',
-        department: 'Design',
-        role: 'UI/UX Lead',
-        status: 'Active',
-        joinDate: '2023-03-22',
-    },
-    {
-        id: 'EMP003',
-        name: 'Emily Davis',
-        email: 'emily@workzen.com',
-        department: 'Marketing',
-        role: 'Marketing Manager',
-        status: 'Active',
-        joinDate: '2022-11-08',
-    },
-    {
-        id: 'EMP004',
-        name: 'Alex Kim',
-        email: 'alex@workzen.com',
-        department: 'HR',
-        role: 'HR Specialist',
-        status: 'On Leave',
-        joinDate: '2023-06-01',
-    },
-    {
-        id: 'EMP005',
-        name: 'Lisa Wang',
-        email: 'lisa@workzen.com',
-        department: 'Finance',
-        role: 'Accountant',
-        status: 'Active',
-        joinDate: '2022-08-14',
-    },
-    {
-        id: 'EMP006',
-        name: 'James Brown',
-        email: 'james@workzen.com',
-        department: 'Engineering',
-        role: 'DevOps Engineer',
-        status: 'Active',
-        joinDate: '2023-02-10',
-    },
-    {
-        id: 'EMP007',
-        name: 'David Wilson',
-        email: 'david@workzen.com',
-        department: 'Support',
-        role: 'Support Lead',
-        status: 'Active',
-        joinDate: '2023-04-05',
-    },
-];
 
 // --- Avatar colors for variety ---
 const AVATAR_COLORS = [
@@ -109,19 +37,11 @@ const StatusBadge = ({ status }) => {
     const isLeave = status?.toLowerCase() === 'on leave';
     return (
         <span
-            style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '4px 14px',
-                borderRadius: '999px',
-                fontSize: '12px',
-                fontWeight: 600,
-                backgroundColor: isLeave ? '#FFF7ED' : '#F0FDF4',
-                color: isLeave ? '#EA580C' : '#16A34A',
-                border: `1px solid ${isLeave ? '#FED7AA' : '#BBF7D0'}`,
-                letterSpacing: '0.02em',
-                whiteSpace: 'nowrap',
-            }}
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                isLeave 
+                ? 'bg-orange-50 text-orange-600 border-orange-200' 
+                : 'bg-green-50 text-green-600 border-green-200'
+            }`}
         >
             {status}
         </span>
@@ -129,90 +49,214 @@ const StatusBadge = ({ status }) => {
 };
 
 const Employees = () => {
-    const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
     const [searchTerm, setSearchTerm] = useState('');
+    const [employees, setEmployees] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-    const sidebarItems = [
-        { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard/hr' },
-        { label: 'Employees', icon: Users, active: true, path: '/dashboard/hr/employees' },
-        { label: 'Attendance', icon: Calendar, path: '/dashboard/hr/attendance' },
-        { label: 'Leave Management', icon: ClipboardList, path: '/dashboard/hr/leaves' },
-        { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
-        { label: 'Payslip', icon: FileText, path: '/dashboard/hr/payslips' },
-        { label: 'Notifications', icon: Bell, path: '/dashboard/hr/notifications' },
-    ];
+    const fetchEmployees = async () => {
+        try {
+            setIsLoading(true);
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const token = JSON.parse(userStr).token;
 
-    const filtered = MOCK_EMPLOYEES.filter((emp) => {
-        const term = searchTerm.toLowerCase();
-        return (
-            emp.name.toLowerCase().includes(term) ||
-            emp.email.toLowerCase().includes(term) ||
-            emp.id.toLowerCase().includes(term) ||
-            emp.department.toLowerCase().includes(term) ||
-            emp.role.toLowerCase().includes(term)
-        );
-    });
+            const response = await axios.get(`http://localhost:5000/api/hr/employees?search=${searchTerm}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.data.success) {
+                setEmployees(response.data.data.employees);
+                setTotal(response.data.data.total);
+            }
+        } catch (error) {
+            console.error("Error fetching employees", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchEmployees();
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm]);
+
+    const handleEdit = (employee) => {
+        setModalMode('edit');
+        setSelectedEmployee(employee);
+        setIsModalOpen(true);
+    };
+
+    const handleView = (employee) => {
+        setModalMode('view');
+        setSelectedEmployee(employee);
+        setIsModalOpen(true);
+    };
+
+    const handleAdd = () => {
+        setModalMode('add');
+        setSelectedEmployee(null);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to deactivate this employee?")) return;
+        try {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const token = JSON.parse(userStr).token;
+
+            const response = await axios.delete(`http://localhost:5000/api/hr/employees/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.data.success) {
+                fetchEmployees();
+            }
+        } catch (error) {
+            console.error("Error deleting employee", error);
+            alert(error.response?.data?.message || "Error deleting employee");
+        }
+    };
 
     return (
-        <>
+        <div>
+            {/* Employee Modal (Add/Edit/View) */}
+            <EmployeeModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onRefresh={fetchEmployees}
+                mode={modalMode}
+                employeeData={selectedEmployee}
+            />
+
             {/* Page Header */}
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h2 className="text-[28px] font-bold text-slate-900 leading-tight">
-                        Employees
-                    </h2>
-                    <p className="text-sm font-medium text-slate-500 mt-1">
-                        {filtered.length} total staff members
-                    </p>
+                    <h2 className="text-[28px] font-semibold text-slate-900 mb-1">Employees</h2>
+                    <p className="text-slate-500 text-sm">{total} total employees registered</p>
                 </div>
                 <button
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
+                    onClick={handleAdd}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                    <Plus size={18} />
+                    <Plus size={20} />
                     Add Employee
                 </button>
             </div>
 
             {/* Search Bar */}
-            <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-[20px] px-6 py-4 max-w-md mb-8 shadow-sm">
-                <Search size={18} className="text-slate-400" />
+            <div className="relative max-w-md mb-8 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                 <input
                     type="text"
-                    placeholder="Search employees..."
+                    placeholder="Search by name, ID or email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border-none outline-none text-[15px] font-medium text-slate-600 bg-transparent w-full"
+                    className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-sm"
                 />
             </div>
 
             {/* Table Container */}
-            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
-                        {/* Table Head */}
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
-                                {['ID', 'EMPLOYEE', 'DEPARTMENT', 'ROLE', 'STATUS', 'JOIN DATE', 'ACTIONS'].map((col, i) => (
-                                    <th key={i} className={`px-6 py-5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest ${i === 6 ? 'text-center' : ''}`}>
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                {['ID', 'EMPLOYEE', 'DEPARTMENT', 'DESIGNATION', 'STATUS', 'JOIN DATE', 'ACTIONS'].map((col, i) => (
+                                    <th key={i} className={`px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest ${i === 6 ? 'text-center' : ''}`}>
                                         {col}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
-
-                        {/* Table Body */}
                         <tbody className="divide-y divide-slate-50">
-                            {filtered.length === 0 ? (
+                            {isLoading ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-20 text-center text-slate-400 font-medium">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-medium">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                            Loading employee records...
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : employees.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-medium font-inter">
                                         No employees found matching your search.
                                     </td>
                                 </tr>
                             ) : (
-                                filtered.map((emp, idx) => {
+                                employees.map((emp, idx) => {
                                     const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                                    const fullName = `${emp.firstName} ${emp.lastName}`;
                                     return (
-                                        <TableRow key={emp.id} emp={emp} avatarColor={avatarColor} />
+                                        <tr key={emp._id} className="hover:bg-slate-50/80 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">{emp.employeeId}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div 
+                                                        style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}
+                                                        className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm"
+                                                    >
+                                                        {getInitials(fullName)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-900 leading-tight">{fullName}</p>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{emp.email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium text-slate-600">{emp.department}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium text-slate-600">{emp.designation}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <StatusBadge status={emp.status} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm text-slate-500">{formatDate(emp.joinDate)}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => handleView(emp)}
+                                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleEdit(emp)}
+                                                        className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                                        title="Edit Employee"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(emp._id)}
+                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                        title="Deactivate"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     );
                                 })
                             )}
@@ -220,112 +264,7 @@ const Employees = () => {
                     </table>
                 </div>
             </div>
-        </>
-    );
-};
-
-/* ── Table Row with hover state ── */
-const TableRow = ({ emp, avatarColor }) => {
-    const [hovered, setHovered] = useState(false);
-
-    return (
-        <tr
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                borderBottom: '1px solid #F3F4F6',
-                backgroundColor: hovered ? '#F9FAFB' : '#fff',
-                transition: 'background 0.12s',
-            }}
-        >
-            {/* ID */}
-            <td style={{ padding: '16px 20px', fontSize: '13px', fontWeight: 600, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-                {emp.id}
-            </td>
-
-            {/* Employee (Avatar + Name + Email) */}
-            <td style={{ padding: '16px 20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        backgroundColor: avatarColor.bg,
-                        color: avatarColor.text,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 700,
-                        fontSize: '14px',
-                        flexShrink: 0,
-                    }}>
-                        {getInitials(emp.name)}
-                    </div>
-                    <div>
-                        <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>{emp.name}</p>
-                        <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#6B7280' }}>{emp.email}</p>
-                    </div>
-                </div>
-            </td>
-
-            {/* Department */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: '#374151', whiteSpace: 'nowrap' }}>
-                {emp.department}
-            </td>
-
-            {/* Role */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: '#374151', whiteSpace: 'nowrap' }}>
-                {emp.role}
-            </td>
-
-            {/* Status */}
-            <td style={{ padding: '16px 20px' }}>
-                <StatusBadge status={emp.status} />
-            </td>
-
-            {/* Join Date */}
-            <td style={{ padding: '16px 20px', fontSize: '14px', color: '#6B7280', whiteSpace: 'nowrap' }}>
-                {formatDate(emp.joinDate)}
-            </td>
-
-            {/* Actions */}
-            <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <ActionIcon Icon={Eye} hoverColor="#2563EB" title="View" />
-                    <ActionIcon Icon={Pencil} hoverColor="#16A34A" title="Edit" />
-                    <ActionIcon Icon={Trash2} hoverColor="#DC2626" title="Delete" isDelete />
-                </div>
-            </td>
-        </tr>
-    );
-};
-
-/* ── Action Icon Button ── */
-const ActionIcon = ({ Icon, hoverColor, title, isDelete }) => {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <button
-            title={title}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            onClick={() => alert(`${title} action clicked`)}
-            style={{
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '8px',
-                border: '1px solid #E5E7EB',
-                backgroundColor: hovered ? (isDelete ? '#FEF2F2' : '#F0F9FF') : '#fff',
-                color: hovered ? hoverColor : '#9CA3AF',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                padding: 0,
-            }}
-        >
-            <Icon size={15} />
-        </button>
+        </div>
     );
 };
 

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { 
     User, 
@@ -14,9 +14,32 @@ import {
 } from 'lucide-react';
 import Button from '../components/common/Button.jsx';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function Profile() {
     const { user } = useContext(AuthContext);
+    const [employee, setEmployee] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const token = user?.token;
+                if (!token) return;
+                const res = await axios.get('http://localhost:5000/api/employee/profile', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.data.success) {
+                    setEmployee(res.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, [user]);
 
     const handleEditClick = () => {
         toast.success('Edit profile functionality will be available soon.', {
@@ -30,7 +53,7 @@ export default function Profile() {
     };
 
     const formatDate = (dateStr) => {
-        if (!dateStr) return 'Mar 15, 2024';
+        if (!dateStr) return 'N/A';
         const date = new Date(dateStr);
         return date.toLocaleDateString('en-US', { 
             month: 'short', 
@@ -44,16 +67,17 @@ export default function Profile() {
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     };
 
-    const employeeId = `EMP-${user?._id?.slice(-4) || '2042'}`;
-    const department = 'Engineering';
-    const location = 'San Francisco, CA';
-    const phone = '+1 (555) 000-1234';
+    const employeeId = employee?.employeeId || 'N/A';
+    const department = employee?.department || 'N/A';
+    const location = employee?.address || 'N/A';
+    const phone = employee?.phone || 'N/A';
+    const designation = employee?.designation || (user?.role === 'hr' ? 'HR Manager' : 'Employee');
 
     const infoCards = [
         {
             title: 'Personal Details',
             items: [
-                { label: 'Email Address', value: user?.email || 'john@workzen.app', icon: Mail, color: 'text-blue-500', bg: 'bg-blue-50' },
+                { label: 'Email Address', value: user?.email || 'N/A', icon: Mail, color: 'text-blue-500', bg: 'bg-blue-50' },
                 { label: 'Department', value: department, icon: Building2, color: 'text-emerald-500', bg: 'bg-emerald-50' },
                 { label: 'Location', value: location, icon: MapPin, color: 'text-orange-500', bg: 'bg-orange-50' },
             ]
@@ -62,8 +86,9 @@ export default function Profile() {
             title: 'Work Information',
             items: [
                 { label: 'Phone Number', value: phone, icon: Phone, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-                { label: 'Job Role', value: user?.role === 'hr' ? 'HR Manager' : 'Software Engineer', icon: Briefcase, color: 'text-rose-500', bg: 'bg-rose-50' },
-                { label: 'Join Date', value: formatDate(user?.createdAt), icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50' },
+                { label: 'Job Role', value: designation, icon: Briefcase, color: 'text-rose-500', bg: 'bg-rose-50' },
+                { label: 'Emergency Contact', value: employee?.emergencyContact || 'N/A', icon: User, color: 'text-rose-500', bg: 'bg-rose-50' },
+                { label: 'Join Date', value: formatDate(employee?.joinDate || user?.createdAt), icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50' },
             ]
         }
     ];

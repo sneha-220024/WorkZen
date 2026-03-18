@@ -1,78 +1,114 @@
-import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { 
-    LayoutDashboard, 
-    Users, 
-    Calendar, 
-    ClipboardList, 
-    BadgeDollarSign, 
-    FileText, 
-    Bell, 
-    Search,
-    User as UserIcon,
-    TrendingUp,
-    DollarSign,
-    CreditCard
-} from 'lucide-react';
+import { Search, DollarSign, Users, Play, CheckCircle } from 'lucide-react';
 
 const HRPayrollManagement = () => {
-    const { user } = useContext(AuthContext);
-    const navigate = useNavigate();
+    useContext(AuthContext);
     const [searchTerm, setSearchTerm] = useState('');
+    const [payrollData, setPayrollData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isGenerating, setIsGenerating] = useState(false);
+    
+    // Month/Year for generation
+    const currentMonth = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date());
+    const currentYear = new Date().getFullYear();
+    const [genMonth, setGenMonth] = useState(currentMonth);
+    const [genYear] = useState(currentYear);
 
-    const sidebarItems = [
-        { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard/hr' },
-        { label: 'Employees', icon: Users, path: '/dashboard/hr/employees' },
-        { label: 'Attendance', icon: Calendar, path: '/dashboard/hr/attendance' },
-        { label: 'Leave Management', icon: ClipboardList, path: '/dashboard/hr/leaves' },
-        { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll', active: true },
-        { label: 'Payslip', icon: FileText, path: '/dashboard/hr/payslips' },
-        { label: 'Notifications', icon: Bell, path: '/dashboard/hr/notifications' },
-    ];
+    const fetchPayroll = async () => {
+        try {
+            setIsLoading(true);
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const token = JSON.parse(userStr).token;
 
-    const summaryCards = [
-        { title: 'Total Payroll', value: '$186,400', subtext: 'March 2026', icon: DollarSign, color: 'blue' },
-        { title: 'Avg Salary', value: '$4,250', subtext: '+3.2% YoY', icon: TrendingUp, color: 'green' },
-        { title: 'Employees Paid', value: '189 / 248', subtext: '76.2%', icon: Users, color: 'purple' },
-        { title: 'Pending Amount', value: '$42,600', subtext: '59 remaining', icon: CreditCard, color: 'red' }
-    ];
+            const response = await axios.get('http://localhost:5000/api/hr/payroll', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-    const mockPayroll = [
-        { id: 1, employee: 'Sarah Johnson', department: 'Engineering', base: '$5,200', deductions: '$780', net: '$4,420', status: 'Paid' },
-        { id: 2, employee: 'Mike Chen', department: 'Design', base: '$4,800', deductions: '$720', net: '$4,080', status: 'Paid' },
-        { id: 3, employee: 'Emily Davis', department: 'Marketing', base: '$4,500', deductions: '$675', net: '$3,825', status: 'Pending' },
-        { id: 4, employee: 'Alex Kim', department: 'HR', base: '$4,200', deductions: '$630', net: '$3,570', status: 'Pending' },
-        { id: 5, employee: 'Lisa Wang', department: 'Finance', base: '$4,600', deductions: '$690', net: '$3,910', status: 'Paid' },
-        { id: 6, employee: 'James Brown', department: 'Engineering', base: '$5,000', deductions: '$750', net: '$4,250', status: 'Processing' }
-    ];
+            if (response.data.success) {
+                setPayrollData(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching payroll data", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const filteredPayroll = mockPayroll.filter(req => 
-        req.employee.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    useEffect(() => {
+        fetchPayroll();
+    }, []);
+
+    const handleGenerate = async () => {
+        if (!window.confirm(`Generate payroll for ${genMonth} ${genYear}?`)) return;
+        
+        try {
+            setIsGenerating(true);
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const token = JSON.parse(userStr).token;
+
+            const response = await axios.post('http://localhost:5000/api/hr/payroll/generate', {
+                month: genMonth,
+                year: genYear
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                alert(response.data.message);
+                fetchPayroll();
+            }
+        } catch (error) {
+            console.error("Error generating payroll", error);
+            alert(error.response?.data?.message || "Failed to generate payroll");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const handleMarkPaid = async (id) => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const token = JSON.parse(userStr).token;
+
+            const response = await axios.patch(`http://localhost:5000/api/hr/payroll/pay/${id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                fetchPayroll();
+            }
+        } catch (error) {
+            console.error("Error marking as paid", error);
+        }
+    };
+
+    const filteredPayroll = payrollData.filter(req => {
+        if (!req.employeeId) return false;
+        const firstName = req.employeeId.firstName?.toLowerCase() || '';
+        const lastName = req.employeeId.lastName?.toLowerCase() || '';
+        const search = searchTerm.toLowerCase();
+        return firstName.includes(search) || lastName.includes(search);
+    });
 
     const getInitials = (name) => {
+        if (!name) return '??';
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     };
 
     const StatusBadge = ({ status }) => {
         const styles = {
-            Paid: { bg: '#DCFCE7', text: '#166534' }, // Green
-            Pending: { bg: '#FEF9C3', text: '#854D0E' }, // Yellow
-            Processing: { bg: '#DBEAFFEF', text: '#1E40AF' } // Blue
+            Paid: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+            Unpaid: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
         };
-        const style = styles[status] || { bg: '#F3F4F6', text: '#374151' };
+        const style = styles[status] || { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' };
         
         return (
-            <span style={{
-                padding: '4px 12px',
-                borderRadius: '9999px',
-                fontSize: '12px',
-                fontWeight: 600,
-                backgroundColor: style.bg,
-                color: style.text,
-                display: 'inline-block'
-            }}>
+            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${style.bg} ${style.text} ${style.border}`}>
                 {status}
             </span>
         );
@@ -86,90 +122,142 @@ const HRPayrollManagement = () => {
         { bg: '#EFF6FF', text: '#2563EB' },
     ];
 
-    const CardIcon = ({ icon: Icon, color }) => {
-        const colors = {
-            blue: 'bg-blue-100 text-blue-600',
-            green: 'bg-green-100 text-green-600',
-            purple: 'bg-purple-100 text-purple-600',
-            red: 'bg-red-100 text-red-600'
-        };
-        return (
-            <div className={`w-12 h-12 rounded-2xl ${colors[color]} flex items-center justify-center mb-4 shadow-sm`}>
-                <Icon size={24} />
-            </div>
-        );
-    };
-
     return (
-        <>
-            {/* Page Header */}
-            <div className="mb-8">
-                <h2 className="text-[28px] font-semibold text-slate-900 mb-1">Payroll Management</h2>
-                <p className="text-slate-500 text-sm">Salary calculations and payment tracking</p>
+        <div>
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h2 className="text-[28px] font-semibold text-slate-900 mb-1">Payroll Management</h2>
+                    <p className="text-slate-500 text-sm">Calculate salaries and track payment statuses across the organization</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <select 
+                        value={genMonth} 
+                        onChange={(e) => setGenMonth(e.target.value)}
+                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                    >
+                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                            <option key={m} value={m}>{m}</option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isGenerating}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50"
+                    >
+                        <Play size={18} fill="currentColor" />
+                        {isGenerating ? 'Generating...' : 'Generate Payroll'}
+                    </button>
+                </div>
             </div>
 
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        {summaryCards.map((card, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                                <CardIcon icon={card.icon} color={card.color} />
-                                <p className="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">{card.title}</p>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-1">{card.value}</h3>
-                                <p className={`text-xs font-semibold ${card.color === 'green' ? 'text-green-600' : 'text-slate-400'}`}>
-                                    {card.subtext}
-                                </p>
-                            </div>
-                        ))}
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
+                        <DollarSign size={24} />
                     </div>
+                    <p className="text-sm font-semibold text-slate-400 mb-1 uppercase tracking-wider">Total Payroll</p>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-1">
+                        ${payrollData.reduce((sum, r) => sum + (r.netSalary || 0), 0).toLocaleString()}
+                    </h3>
+                    <p className="text-xs font-bold text-blue-600">Sum of Net Salaries</p>
+                </div>
+                <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-4">
+                        <Users size={24} />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-400 mb-1 uppercase tracking-wider">Employees Processed</p>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{payrollData.length}</h3>
+                    <p className="text-xs font-bold text-purple-600">Total Records</p>
+                </div>
+            </div>
 
-                    {/* Table Container */}
-                    <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100">
-                                        {['EMPLOYEE', 'DEPARTMENT', 'BASE SALARY', 'DEDUCTIONS', 'NET PAY', 'STATUS'].map((col, i) => (
-                                            <th key={i} className="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                                                {col}
-                                            </th>
-                                        ))}
+             {/* Search Bar */}
+             <div className="relative max-w-md mb-8 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                <input
+                    type="text"
+                    placeholder="Search employees..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-sm"
+                />
+            </div>
+
+            {/* Table Container */}
+            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                {['EMPLOYEE', 'PERIOD', 'BASE SALARY', 'DEDUCTIONS', 'NET PAY', 'STATUS', 'ACTIONS'].map((col, i) => (
+                                    <th key={i} className="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                                        {col}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                            Loading payroll...
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredPayroll.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-inter">No payroll records found.</td>
+                                </tr>
+                            ) : filteredPayroll.map((row, idx) => {
+                                const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                                const fullName = row.employeeId ? `${row.employeeId.firstName} ${row.employeeId.lastName}` : 'N/A';
+                                return (
+                                    <tr key={row._id} className="hover:bg-slate-50/80 transition-colors group">
+                                        <td className="px-6 py-5">
+                                            <div className="flex items-center gap-3">
+                                                <div 
+                                                    style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}
+                                                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm"
+                                                >
+                                                    {getInitials(fullName)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-900 leading-tight">{fullName}</p>
+                                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{row.employeeId?.department}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <span className="text-sm font-medium text-slate-600">{row.month} {row.year}</span>
+                                        </td>
+                                        <td className="px-6 py-5 text-sm font-semibold text-slate-700">${row.baseSalary?.toLocaleString()}</td>
+                                        <td className="px-6 py-5 text-sm font-semibold text-red-500">-${row.deductions?.toLocaleString()}</td>
+                                        <td className="px-6 py-5 text-sm font-bold text-slate-900">${row.netSalary?.toLocaleString()}</td>
+                                        <td className="px-6 py-5">
+                                            <StatusBadge status={row.status} />
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            {row.status === 'Unpaid' && (
+                                                <button 
+                                                    onClick={() => handleMarkPaid(row._id)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-lg transition-all text-xs font-bold border border-green-100"
+                                                >
+                                                    <CheckCircle size={14} />
+                                                    Mark Paid
+                                                </button>
+                                            )}
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {filteredPayroll.map((row, idx) => {
-                                        const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-                                        return (
-                                            <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-6 py-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div 
-                                                            style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}
-                                                            className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm"
-                                                        >
-                                                            {getInitials(row.employee)}
-                                                        </div>
-                                                        <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{row.employee}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold">
-                                                        {row.department}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-5 text-sm font-medium text-slate-700">{row.base}</td>
-                                                <td className="px-6 py-5 text-sm font-medium text-red-500">{row.deductions}</td>
-                                                <td className="px-6 py-5 text-sm font-bold text-slate-900">{row.net}</td>
-                                                <td className="px-6 py-5">
-                                                    <StatusBadge status={row.status} />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-        </>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 };
 

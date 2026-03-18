@@ -139,5 +139,6 @@ export default function AppRoutes() {
 function DashboardRedirect() {
     const { user } = useContext(AuthContext);
     if (!user) return <Navigate to="/login" />;
-    return <Navigate to={user.role === 'hr' ? '/dashboard/hr' : '/dashboard/employee'} />;
+    const role = user.role?.toLowerCase();
+    return <Navigate to={role === 'hr' ? '/dashboard/hr' : '/dashboard/employee'} />;
 }
