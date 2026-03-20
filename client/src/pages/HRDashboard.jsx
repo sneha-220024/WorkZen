@@ -74,8 +74,6 @@ const HRDashboard = () => {
         { label: 'Add Employee', icon: UserPlus, onClick: () => navigate('/dashboard/hr/employees') },
         { label: 'Approve Leave', icon: CheckCircle, onClick: () => navigate('/dashboard/hr/leaves') },
         { label: 'Run Payroll', icon: Play, onClick: () => navigate('/dashboard/hr/payroll') },
-        { label: 'New Recruitment', icon: Plus, onClick: () => {} },
-        { label: 'View Reports', icon: BarChart3, onClick: () => {} },
     ];
 
     return (
