@@ -1,20 +1,70 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
+import Button from '../components/common/Button.jsx';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
+
 import {
     Calendar,
     Clock,
     ArrowUpRight,
     Bell,
     TrendingUp,
-    MoreVertical
+    MoreVertical,
+    CheckCircle2
 } from 'lucide-react';
-import { useNavigate, Outlet } from 'react-router-dom';
+
 import axios from 'axios';
+import SupportModal from '../components/common/SupportModal.jsx';
+
 
 const EmployeeDashboard = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [stats, setStats] = useState([]);
+
+    const location = useLocation();
+
+    const initialStats = [
+        {
+            label: 'Present Days',
+            count: '18',
+            description: 'This Month',
+            icon: Calendar,
+            color: 'bg-blue-500',
+            textColor: 'text-blue-600',
+            bgColor: 'bg-blue-50'
+        },
+        {
+            label: 'Leave Balance',
+            count: '12',
+            description: 'Days Remaining',
+            icon: CheckCircle2,
+            color: 'bg-emerald-500',
+            textColor: 'text-emerald-600',
+            bgColor: 'bg-emerald-50'
+        },
+        {
+            label: 'Overtime Hours',
+            count: '8.5',
+            description: 'Current Period',
+            icon: Clock,
+            color: 'bg-orange-500',
+            textColor: 'text-orange-600',
+            bgColor: 'bg-orange-50'
+        },
+        {
+            label: 'Notifications',
+            count: '3',
+            description: 'Unread Alerts',
+            icon: Bell,
+            color: 'bg-primary',
+            textColor: 'text-primary',
+            bgColor: 'bg-indigo-50'
+        },
+    ];
+
+    const [stats, setStats] = useState(initialStats);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,10 +73,17 @@ const EmployeeDashboard = () => {
         checkInTime: null,
     });
 
+    const [supportModal, setSupportModal] = useState({
+        isOpen: false,
+        type: 'HR' // or 'IT'
+    });
+
+
     useEffect(() => {
         fetchDashboardData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
 
     const fetchDashboardData = async () => {
         try {
@@ -56,7 +113,7 @@ const EmployeeDashboard = () => {
                 const history = historyRes.data.data;
                 const today = new Date().toISOString().split('T')[0];
                 const todayRec = history.find(r => r.date.startsWith(today));
-                
+
                 if (todayRec) {
                     setAttendanceStatus({
                         checkedIn: !!todayRec.checkInTime && !todayRec.checkOutTime,
@@ -68,8 +125,8 @@ const EmployeeDashboard = () => {
                 const mappedActivities = history.slice(0, 4).map(r => ({
                     id: r._id,
                     type: 'check-in',
-                    title: `Checked in at ${new Date(r.checkInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
-                    time: new Date(r.checkInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    title: `Checked in at ${new Date(r.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+                    time: new Date(r.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     date: new Date(r.date).toLocaleDateString() === new Date().toLocaleDateString() ? 'Today' : new Date(r.date).toLocaleDateString(),
                     icon: Clock,
                     color: 'text-blue-500'
@@ -102,7 +159,6 @@ const EmployeeDashboard = () => {
                         Apply for Leave
                     </button>
                 </div>
-
             </div>
 
             {/* Stats Cards */}
@@ -187,7 +243,7 @@ const EmployeeDashboard = () => {
 
                 {/* Quick Shortcuts / Info Card */}
                 <div className="space-y-8">
-                    <div className="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group" style={{background: 'linear-gradient(135deg, #6366f1 0%, #7c3aed 50%, #4f46e5 100%)'}}>
+                    <div className="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #7c3aed 50%, #4f46e5 100%)' }}>
                         <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
                         <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
                         <h3 className="text-lg font-bold font-sora mb-2 relative z-10">Attendance Tracking</h3>
@@ -209,17 +265,23 @@ const EmployeeDashboard = () => {
                             </button>
                         )}
 
-                        <p className="text-xs text-indigo-300 mt-4 text-center font-medium relative z-10">System time: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p className="text-xs text-indigo-300 mt-4 text-center font-medium relative z-10">System time: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
 
                     <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
                         <h3 className="text-slate-900 font-bold mb-4 font-sora">Help & Support</h3>
                         <div className="space-y-3">
-                            <button className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group">
+                            <button 
+                                onClick={() => setSupportModal({ isOpen: true, type: 'HR' })}
+                                className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group"
+                            >
                                 Contact HR
                                 <ArrowUpRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
                             </button>
-                            <button className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group">
+                            <button 
+                                onClick={() => setSupportModal({ isOpen: true, type: 'IT' })}
+                                className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group"
+                            >
                                 IT Support
                                 <ArrowUpRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
                             </button>
@@ -229,6 +291,13 @@ const EmployeeDashboard = () => {
 
                 <Outlet />
             </div>
+
+            {/* Support Modal */}
+            <SupportModal 
+                isOpen={supportModal.isOpen}
+                onClose={() => setSupportModal({ ...supportModal, isOpen: false })}
+                type={supportModal.type}
+            />
         </div>
     );
 };
