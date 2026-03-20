@@ -11,14 +11,15 @@ passport.use(new GoogleStrategy({
     async (accessToken: string, refreshToken: string, profile: any, done: any) => {
         try {
             const email = profile.emails?.[0]?.value;
+            const googleId = profile.id;
             if (!email) return done(new Error('No email found in Google profile'), null);
 
-            // Check HR
+            // Check HR by email
             let user = await HR.findOne({ email });
             let role = 'hr';
 
             if (!user) {
-                // Check Employee
+                // Check Employee by email
                 user = await Employee.findOne({ email }) as any;
                 role = 'employee';
             }
@@ -26,10 +27,11 @@ passport.use(new GoogleStrategy({
             if (user) {
                 return done(null, { ...user.toObject(), role });
             } else {
-                // New user via Google defaults to HR as per registration flow
+                // New user via Google — create HR account without a password
                 const newUser = await HR.create({
                     name: profile.displayName,
                     email: email,
+                    googleId: googleId,
                     role: 'hr'
                 });
                 return done(null, { ...newUser.toObject(), role: 'hr' });
