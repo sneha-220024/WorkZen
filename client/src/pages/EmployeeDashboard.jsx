@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import axios from 'axios';
+import SupportModal from '../components/common/SupportModal.jsx';
 
 
 const EmployeeDashboard = () => {
@@ -70,6 +71,11 @@ const EmployeeDashboard = () => {
     const [attendanceStatus, setAttendanceStatus] = useState({
         checkedIn: false,
         checkInTime: null,
+    });
+
+    const [supportModal, setSupportModal] = useState({
+        isOpen: false,
+        type: 'HR' // or 'IT'
     });
 
 
@@ -265,11 +271,17 @@ const EmployeeDashboard = () => {
                     <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
                         <h3 className="text-slate-900 font-bold mb-4 font-sora">Help & Support</h3>
                         <div className="space-y-3">
-                            <button className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group">
+                            <button 
+                                onClick={() => setSupportModal({ isOpen: true, type: 'HR' })}
+                                className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group"
+                            >
                                 Contact HR
                                 <ArrowUpRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
                             </button>
-                            <button className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group">
+                            <button 
+                                onClick={() => setSupportModal({ isOpen: true, type: 'IT' })}
+                                className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-sm font-bold text-slate-700 group"
+                            >
                                 IT Support
                                 <ArrowUpRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
                             </button>
@@ -279,6 +291,13 @@ const EmployeeDashboard = () => {
 
                 <Outlet />
             </div>
+
+            {/* Support Modal */}
+            <SupportModal 
+                isOpen={supportModal.isOpen}
+                onClose={() => setSupportModal({ ...supportModal, isOpen: false })}
+                type={supportModal.type}
+            />
         </div>
     );
 };
