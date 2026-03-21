@@ -15,11 +15,14 @@ import {
 import Button from '../components/common/Button.jsx';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import EditProfileModal from '../components/common/EditProfileModal.jsx';
 
 export default function Profile() {
     const { user } = useContext(AuthContext);
     const [employee, setEmployee] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -39,17 +42,16 @@ export default function Profile() {
             }
         };
         fetchProfile();
-    }, [user]);
+    }, [user, refreshTrigger]);
+
+    const handleRefresh = () => {
+        setRefreshTrigger(prev => prev + 1);
+        // Optionally reload window if Context needs full refresh without complex context updating: 
+        // window.location.reload(); 
+    };
 
     const handleEditClick = () => {
-        toast.success('Edit profile functionality will be available soon.', {
-            icon: '🚧',
-            style: {
-                borderRadius: '10px',
-                background: '#1e293b',
-                color: '#fff',
-            },
-        });
+        setIsEditModalOpen(true);
     };
 
     const formatDate = (dateStr) => {
@@ -170,6 +172,14 @@ export default function Profile() {
                     </div>
                 ))}
             </div>
+
+            <EditProfileModal 
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onRefresh={handleRefresh}
+                employeeData={employee}
+                userData={user}
+            />
         </div>
     );
 }

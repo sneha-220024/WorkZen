@@ -14,6 +14,7 @@ const router = Router();
 
 // Profile
 router.get('/profile', EmployeeController.getProfile);
+router.put('/profile', EmployeeController.updateProfile);
 
 // Dashboard Stats
 router.get('/dashboard-stats', DashboardController.getEmployeeDashboardStats);

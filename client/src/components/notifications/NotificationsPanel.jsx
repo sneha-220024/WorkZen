@@ -1,72 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
     CalendarClock, 
     UserPlus, 
     BadgeDollarSign, 
     Clock, 
     Settings,
-    Check
+    Check,
+    Loader2
 } from 'lucide-react';
+import { AuthContext } from '../../context/AuthContext.jsx';
+import api from '../../services/api';
+import { timeAgo } from '../../utils/helpers';
 
 const NotificationsPanel = () => {
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            title: 'Leave Request Pending',
-            description: 'Sarah Johnson requested 3 days casual leave',
-            time: '10 min ago',
-            icon: CalendarClock,
-            iconColor: 'text-orange-600',
-            iconBg: 'bg-orange-100',
-            isRead: false
-        },
-        {
-            id: 2,
-            title: 'New Employee Joined',
-            description: 'Chris Patel has been added to Engineering',
-            time: '1 hr ago',
-            icon: UserPlus,
-            iconColor: 'text-blue-600',
-            iconBg: 'bg-blue-100',
-            isRead: false
-        },
-        {
-            id: 3,
-            title: 'Payroll Processed',
-            description: 'March payroll batch 1 completed — 189 employees',
-            time: '3 hrs ago',
-            icon: BadgeDollarSign,
-            iconColor: 'text-purple-600',
-            iconBg: 'bg-purple-100',
-            isRead: true
-        },
-        {
-            id: 4,
-            title: 'Attendance Alert',
-            description: 'James Brown checked in late today at 10:15 AM',
-            time: '4 hrs ago',
-            icon: Clock,
-            iconColor: 'text-red-600',
-            iconBg: 'bg-red-100',
-            isRead: true
-        },
-        {
-            id: 5,
-            title: 'System Update',
-            description: 'WorkZen v2.4 deployed with new analytics features',
-            time: '1 day ago',
-            icon: Settings,
-            iconColor: 'text-slate-600',
-            iconBg: 'bg-slate-100',
-            isRead: true
+    const { user } = useContext(AuthContext);
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchNotifications = async () => {
+        try {
+            if (!user || !user._id) return;
+            
+            const response = await api.get(`/notifications/${user._id}`);
+            if (response.data.success) {
+                setNotifications(response.data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching notifications:', err);
+            setError('Failed to load notifications');
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+        
+        // Refresh notifications every minute
+        const interval = setInterval(fetchNotifications, 60000);
+        return () => clearInterval(interval);
+    }, [user?._id]);
+
+    const markAllAsRead = async () => {
+        try {
+            if (!user || !user._id) return;
+            
+            const response = await api.patch(`/notifications/read-all/${user._id}`);
+            if (response.data.success) {
+                setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+            }
+        } catch (err) {
+            console.error('Error marking all as read:', err);
+        }
+    };
+
+    const getIconDetails = (type) => {
+        switch (type) {
+            case 'leave':
+                return {
+                    icon: CalendarClock,
+                    iconColor: 'text-orange-600',
+                    iconBg: 'bg-orange-100'
+                };
+            case 'attendance':
+                return {
+                    icon: Clock,
+                    iconColor: 'text-red-600',
+                    iconBg: 'bg-red-100'
+                };
+            case 'hr':
+                return {
+                    icon: UserPlus,
+                    iconColor: 'text-blue-600',
+                    iconBg: 'bg-blue-100'
+                };
+            case 'payroll':
+                return {
+                    icon: BadgeDollarSign,
+                    iconColor: 'text-purple-600',
+                    iconBg: 'bg-purple-100'
+                };
+            default:
+                return {
+                    icon: Settings,
+                    iconColor: 'text-slate-600',
+                    iconBg: 'bg-slate-100'
+                };
+        }
+    };
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-    };
+    if (loading) {
+        return (
+            <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 flex flex-col h-full items-center justify-center font-inter p-8">
+                <Loader2 size={40} className="text-blue-600 animate-spin mb-4" />
+                <p className="text-slate-500 font-medium">Loading notifications...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 flex flex-col h-full overflow-hidden font-inter">
@@ -93,42 +126,45 @@ const NotificationsPanel = () => {
 
             {/* Notification List (Scrollable) */}
             <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-slate-50/50">
-                {notifications.map((notification) => (
-                    <div 
-                        key={notification.id}
-                        className={`relative bg-white p-5 rounded-2xl border transition-all duration-200 hover:shadow-md flex items-start gap-5
-                            ${!notification.isRead 
-                                ? 'border-blue-100 shadow-sm' 
-                                : 'border-slate-100 shadow-sm opacity-80 hover:opacity-100'
-                            }`
-                        }
-                    >
-                        {/* Unread Indicator Bar */}
-                        {!notification.isRead && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-blue-600 rounded-r-lg"></div>
-                        )}
+                {notifications.map((notification) => {
+                    const iconDetails = getIconDetails(notification.type);
+                    return (
+                        <div 
+                            key={notification._id}
+                            className={`relative bg-white p-5 rounded-2xl border transition-all duration-200 hover:shadow-md flex items-start gap-5
+                                ${!notification.isRead 
+                                    ? 'border-blue-100 shadow-sm' 
+                                    : 'border-slate-100 shadow-sm opacity-80 hover:opacity-100'
+                                }`
+                            }
+                        >
+                            {/* Unread Indicator Bar */}
+                            {!notification.isRead && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-blue-600 rounded-r-lg"></div>
+                            )}
 
-                        {/* Icon */}
-                        <div className={`w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center ${notification.iconBg} ${notification.iconColor}`}>
-                            <notification.icon size={24} strokeWidth={2} />
-                        </div>
+                            {/* Icon */}
+                            <div className={`w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center ${iconDetails.iconBg} ${iconDetails.iconColor}`}>
+                                <iconDetails.icon size={24} strokeWidth={2} />
+                            </div>
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0 pt-0.5">
-                            <h4 className="text-base font-bold text-slate-900 truncate">
-                                {notification.title}
-                            </h4>
-                            <p className="text-sm text-slate-500 mt-1 line-clamp-2">
-                                {notification.description}
-                            </p>
-                        </div>
+                            {/* Content */}
+                            <div className="flex-1 min-w-0 pt-0.5">
+                                <h4 className="text-base font-bold text-slate-900 truncate">
+                                    {notification.title}
+                                </h4>
+                                <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                                    {notification.message}
+                                </p>
+                            </div>
 
-                        {/* Timestamp */}
-                        <div className="shrink-0 text-xs font-medium text-slate-400 pt-1.5 whitespace-nowrap">
-                            {notification.time}
+                            {/* Timestamp */}
+                            <div className="shrink-0 text-xs font-medium text-slate-400 pt-1.5 whitespace-nowrap">
+                                {timeAgo(notification.createdAt)}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
                 
                 {notifications.length === 0 && (
                     <div className="text-center py-12">
