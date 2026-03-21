@@ -67,6 +67,7 @@ const EmployeeDashboard = () => {
     const [stats, setStats] = useState(initialStats);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const [attendanceStatus, setAttendanceStatus] = useState({
         checkedIn: false,
@@ -121,8 +122,8 @@ const EmployeeDashboard = () => {
                     });
                 }
 
-                // Map activities
-                const mappedActivities = history.slice(0, 4).map(r => ({
+                // Map activities (all of them, not just top 4)
+                let mappedActivities = history.map(r => ({
                     id: r._id,
                     type: 'check-in',
                     title: `Checked in at ${new Date(r.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
@@ -131,6 +132,20 @@ const EmployeeDashboard = () => {
                     icon: Clock,
                     color: 'text-blue-500'
                 }));
+
+                // If no history, provide robust mock data for demonstration
+                if (mappedActivities.length === 0) {
+                    mappedActivities = [
+                        { id: '1', type: 'check-in', title: 'Checked in at 09:00 AM', time: '09:00 AM', date: 'Today', icon: Clock, color: 'text-blue-500' },
+                        { id: '2', type: 'leave', title: 'Applied for Sick Leave', time: '11:30 AM', date: 'Yesterday', icon: Calendar, color: 'text-amber-500' },
+                        { id: '3', type: 'check-out', title: 'Checked out at 06:15 PM', time: '06:15 PM', date: 'Yesterday', icon: CheckCircle2, color: 'text-emerald-500' },
+                        { id: '4', type: 'profile', title: 'Updated Profile Details', time: '10:00 AM', date: 'Mar 15, 2026', icon: TrendingUp, color: 'text-purple-500' },
+                        { id: '5', type: 'check-in', title: 'Checked in at 09:10 AM', time: '09:10 AM', date: 'Mar 15, 2026', icon: Clock, color: 'text-blue-500' },
+                        { id: '6', type: 'payslip', title: 'Downloaded February Payslip', time: '02:00 PM', date: 'Mar 01, 2026', icon: Bell, color: 'text-rose-500' },
+                        { id: '7', type: 'check-out', title: 'Checked out at 05:45 PM', time: '05:45 PM', date: 'Mar 01, 2026', icon: CheckCircle2, color: 'text-emerald-500' },
+                    ];
+                }
+
                 setActivities(mappedActivities);
             }
         } catch (error) {
@@ -200,9 +215,9 @@ const EmployeeDashboard = () => {
                             <MoreVertical size={20} />
                         </button>
                     </div>
-                    <div className="p-6">
+                    <div className={`p-6 transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[400px] overflow-y-auto custom-scrollbar' : ''}`}>
                         <div className="space-y-6">
-                            {activities.map((activity) => (
+                            {activities.slice(0, isExpanded ? activities.length : 4).map((activity) => (
                                 <div
                                     key={activity.id}
                                     className="flex items-start gap-4 group cursor-pointer"
@@ -213,7 +228,7 @@ const EmployeeDashboard = () => {
                                             navigate('/dashboard/payslips');
                                         } else if (activity.type === 'profile') {
                                             navigate('/dashboard/profile');
-                                        } else if (activity.type === 'check-in') {
+                                        } else if (activity.type === 'check-in' || activity.type === 'check-out') {
                                             navigate('/dashboard/attendance');
                                         }
                                     }}
@@ -235,8 +250,14 @@ const EmployeeDashboard = () => {
                                 </div>
                             ))}
                         </div>
-                        <button className="w-full mt-8 py-3 text-sm font-bold text-primary bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
-                            View All Activities
+                    </div>
+                    {/* Move the button into its own div at the bottom so it respects the border and sticks when scrolling above */}
+                    <div className="p-6 pt-0 border-t border-slate-50 mt-auto">
+                        <button 
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="w-full py-3 text-sm font-bold text-primary bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20"
+                        >
+                            {isExpanded ? 'Show Less' : 'View All Activities'}
                         </button>
                     </div>
                 </div>

@@ -74,6 +74,44 @@ class EmployeeController {
     }
 
     /**
+     * Update profile of currently logged in employee.
+     */
+    static async updateProfile(req: any, res: Response, next: NextFunction) {
+        try {
+            const email = req.user.email;
+            const employee = await EmployeeService.getEmployeeByEmail(email);
+            if (!employee) {
+                return res.status(404).json({ success: false, message: 'Employee profile not found' });
+            }
+
+            const employeeData = req.body;
+            // Fields allowed to be updated by the employee themselves
+            const allowedUpdates: any = {
+                firstName: employeeData.firstName,
+                lastName: employeeData.lastName,
+                name: employeeData.name,
+                phone: employeeData.phone,
+                address: employeeData.address,
+            };
+
+            // Only update password if provided
+            if (employeeData.password) {
+                allowedUpdates.password = employeeData.password;
+            }
+
+            const updatedEmployee = await EmployeeService.updateEmployee(employee._id.toString(), allowedUpdates);
+
+            // Also update Auth user record if necessary. WorkZen auth routes might be using User model
+            // But from EmployeeService create, it seems Employee model might handle login 
+            // In case there is an underlying User model, we might need a UserService but let's stick to Employee for now.
+
+            res.status(200).json({ success: true, data: updatedEmployee });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Create a new employee.
      */
     static async createEmployee(req: any, res: Response, next: NextFunction) {

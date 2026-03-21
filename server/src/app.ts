@@ -16,6 +16,7 @@ import attendanceRoutes from './routes/attendanceRoutes';
 import leaveRoutes from './routes/leaveRoutes';
 import payrollRoutes from './routes/payrollRoutes';
 import employeeDashboardRoutes from './routes/employeeDashboardRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 dotenv.config();
 
@@ -61,6 +62,7 @@ app.use('/api/auth', authRoutes);
 
 // Employee Personal Dashboard Routes
 app.use('/api/employee', protect, employeeDashboardRoutes);
+app.use('/api/notifications', protect, notificationRoutes);
 
 // HR Dashboard Routes (Protected)
 app.use('/api/hr/dashboard', protect, checkHR, dashboardRoutes);
