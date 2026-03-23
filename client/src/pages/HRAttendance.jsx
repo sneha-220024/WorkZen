@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { Search } from 'lucide-react';
+import { Search, BarChart2 } from 'lucide-react';
+import AttendanceAnalyticsModal from '../components/attendance/AttendanceAnalyticsModal';
 
 // --- Avatar colors ---
 const AVATAR_COLORS = [
@@ -41,6 +42,13 @@ const HRAttendance = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [attendanceData, setAttendanceData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openAnalytics = (rec) => {
+        setSelectedEmployee(rec.employeeId ? `${rec.employeeId.firstName} ${rec.employeeId.lastName}` : 'Employee');
+        setIsModalOpen(true);
+    };
 
     const fetchAttendance = async () => {
         try {
@@ -102,7 +110,7 @@ const HRAttendance = () => {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map((col, i) => (
+                                 {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS', 'ACTION'].map((col, i) => (
                                     <th key={i} className="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                                         {col}
                                     </th>
@@ -160,8 +168,17 @@ const HRAttendance = () => {
                                                     {rec.totalHours ? `${rec.totalHours.toFixed(2)}h` : '—'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                             <td className="px-6 py-4">
                                                 <StatusBadge status={rec.status} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button 
+                                                    onClick={() => openAnalytics(rec)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/80 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all text-[11px] font-extrabold group"
+                                                >
+                                                    <BarChart2 size={13} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
+                                                    ANALYTICS
+                                                </button>
                                             </td>
                                         </tr>
                                     );
@@ -171,6 +188,12 @@ const HRAttendance = () => {
                     </table>
                 </div>
             </div>
+
+            <AttendanceAnalyticsModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                employeeName={selectedEmployee}
+            />
         </div>
     );
 };
