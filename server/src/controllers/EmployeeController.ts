@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import EmployeeService from '../services/EmployeeService';
 import { IEmployee } from '../models/Employee';
+import ActivityService from '../services/ActivityService';
 
 /**
  * Controller class to handle Employee related HTTP requests.
@@ -123,6 +124,16 @@ class EmployeeController {
                 employeeData.hrId = req.user._id;
             }
             const employee = await EmployeeService.createEmployee(employeeData);
+
+            // Log Activity
+            const hrName = req.user?.name || 'HR';
+            await ActivityService.logActivity(
+                'employee_added',
+                `${employee.name} — Added to the system by ${hrName}`,
+                employee.name,
+                req.user?._id
+            );
+
             res.status(201).json({ success: true, data: employee });
         } catch (error) {
             next(error);
@@ -149,6 +160,16 @@ class EmployeeController {
 
             const employeeData: Partial<IEmployee> = req.body;
             const updatedEmployee = await EmployeeService.updateEmployee(req.params.id as string, employeeData);
+
+            // Log Activity
+            const hrNameU = req.user?.name || 'HR';
+            await ActivityService.logActivity(
+                'employee_updated',
+                `${updatedEmployee?.name || 'Employee'} — Details updated by ${hrNameU}`,
+                updatedEmployee?.name,
+                req.user?._id
+            );
+
             res.status(200).json({ success: true, data: updatedEmployee });
         } catch (error) {
             next(error);
@@ -174,6 +195,16 @@ class EmployeeController {
             }
 
             await EmployeeService.softDeleteEmployee(req.params.id as string);
+
+            // Log Activity
+            const hrNameD = req.user?.name || 'HR';
+            await ActivityService.logActivity(
+                'employee_deleted',
+                `${employee.name} — Account deactivated by ${hrNameD}`,
+                employee.name,
+                req.user?._id
+            );
+
             res.status(200).json({ success: true, message: 'Employee deactivated successfully' });
         } catch (error) {
             next(error);
