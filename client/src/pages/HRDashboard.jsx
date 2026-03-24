@@ -24,6 +24,8 @@ const HRDashboard = () => {
         pendingLeaves: 0,
         payrollSummary: '$0'
     });
+    const [activities, setActivities] = useState([]);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -58,17 +60,67 @@ const HRDashboard = () => {
             }
         };
 
+        const fetchActivities = async (expand = false) => {
+            try {
+                const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
+                if (!token) return;
+
+                const config = {
+                    headers: { Authorization: `Bearer ${token}` }
+                };
+
+                const limit = expand ? 50 : 5;
+                const response = await axios.get(`http://localhost:5000/api/hr/activities?limit=${limit}`, config);
+                if (response.data.success) {
+                    setActivities(response.data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching activities", error);
+            }
+        };
+
         if (user) {
             fetchDashboardData();
+            fetchActivities(isExpanded);
         }
-    }, [user]);
+    }, [user, isExpanded]);
 
-    const recentActivities = [
-        { id: 1, name: 'Sarah Johnson', action: 'Submitted leave request', time: '2 hours ago', initial: 'SJ', color: 'bg-blue-100 text-blue-600' },
-        { id: 2, name: 'Mike Chen', action: 'Checked in', time: '4 hours ago', initial: 'MC', color: 'bg-green-100 text-green-600' },
-        { id: 3, name: 'Emily Davis', action: 'Payslip generated', time: 'Yesterday', initial: 'ED', color: 'bg-purple-100 text-purple-600' },
-        { id: 4, name: 'Alex Kim', action: 'Onboarding completed', time: '2 days ago', initial: 'AK', color: 'bg-orange-100 text-orange-600' },
-    ];
+    const handleViewAll = () => {
+        setIsExpanded(!isExpanded);
+    };
+
+    const getInitials = (name) => {
+        if (!name) return '??';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    };
+
+    const getActivityColor = (type) => {
+        const colors = {
+            leave_approved: 'bg-green-100 text-green-600',
+            leave_rejected: 'bg-red-100 text-red-600',
+            leave_applied: 'bg-blue-100 text-blue-600',
+            employee_added: 'bg-purple-100 text-purple-600',
+            payroll_generated: 'bg-orange-100 text-orange-600',
+            payroll_paid: 'bg-emerald-100 text-emerald-600',
+            payslip_generated: 'bg-indigo-100 text-indigo-600',
+            check_in: 'bg-cyan-100 text-cyan-600',
+            check_out: 'bg-slate-100 text-slate-600'
+        };
+        return colors[type] || 'bg-slate-100 text-slate-600';
+    };
+
+    const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+        
+        if (diffInSeconds < 60) return 'Just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+        if (diffInSeconds < 172800) return 'Yesterday';
+        return date.toLocaleDateString();
+    };
+
 
     const quickActions = [
         { label: 'Add Employee', icon: UserPlus, onClick: () => navigate('/dashboard/hr/employees') },
@@ -113,31 +165,39 @@ const HRDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Recent Activity */}
-                <div className="lg:col-span-2 bg-white rounded-[24px] p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-center mb-6">
+                <div className="lg:col-span-2 bg-white rounded-[24px] p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow flex flex-col">
+                    <div className="flex justify-between items-center mb-6 shrink-0">
                         <h3 className="text-xl font-bold text-slate-900">Recent Activity</h3>
-                        <button className="text-blue-600 text-sm font-semibold hover:underline">View All</button>
+                        <button 
+                            onClick={handleViewAll}
+                            className="text-blue-600 text-sm font-semibold hover:underline"
+                        >
+                            {isExpanded ? 'Show Less' : 'View All'}
+                        </button>
                     </div>
-                    <div className="space-y-6">
-                        {recentActivities.map((activity) => (
-                            <div key={activity.id} className="flex items-center justify-between group">
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-2xl ${activity.color} flex items-center justify-center font-bold text-sm shadow-sm`}>
-                                        {activity.initial}
+                    <div className={`space-y-6 ${isExpanded ? 'max-h-[500px] overflow-y-auto pr-2 custom-scrollbar' : ''}`}>
+                        {activities.length > 0 ? (
+                            activities.map((activity) => (
+                                <div key={activity._id} className="flex items-center justify-between group">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-2xl ${getActivityColor(activity.type)} flex items-center justify-center font-bold text-sm shadow-sm`}>
+                                            {getInitials(activity.employeeName || 'HR')}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-900">
+                                                {activity.message}
+                                            </p>
+                                            <p className="text-xs text-slate-400 mt-0.5">{formatTime(activity.createdAt)}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-900">
-                                            {activity.name} <span className="font-normal text-slate-500">— {activity.action}</span>
-                                        </p>
-                                        <p className="text-xs text-slate-400 mt-0.5">{activity.time}</p>
-                                    </div>
+                                    <button className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-slate-600 transition-all">
+                                        <MoreVertical size={18} />
+                                    </button>
                                 </div>
-                                <button className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-slate-600 transition-all">
-                                    <MoreVertical size={18} />
-                                </button>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className="text-slate-500 text-center py-4">No recent activity</p>
+                        )}
                     </div>
                 </div>
 

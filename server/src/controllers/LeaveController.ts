@@ -3,6 +3,7 @@ import LeaveService from '../services/LeaveService';
 import Employee from '../models/Employee';
 import Leave from '../models/Leave';
 import Notification from '../models/Notification';
+import ActivityService from '../services/ActivityService';
 
 /**
  * Controller class to handle Leave related HTTP requests.
@@ -33,6 +34,15 @@ class LeaveController {
                 message: `Your ${leave.leaveType} leave request for ${new Date(leave.startDate).toLocaleDateString()} is applied and pending approval.`,
                 type: 'leave'
             });
+
+            // Log Activity
+            const employeeName = req.user?.name || 'An employee';
+            await ActivityService.logActivity(
+                'leave_applied',
+                `${employeeName} — Applied for leave`,
+                employeeName,
+                req.user?._id
+            );
 
             res.status(201).json({ success: true, data: leave });
         } catch (error: any) {
@@ -90,6 +100,16 @@ class LeaveController {
                 type: 'leave'
             });
 
+            // Log Activity
+            const hrName = (req as any).user?.name || 'HR';
+            const emp = await Employee.findById(leave.employeeId);
+            await ActivityService.logActivity(
+                'leave_approved',
+                `${emp?.name || 'Employee'} — Leave Approved by ${hrName}`,
+                emp?.name,
+                hrId
+            );
+
             res.status(200).json({ success: true, data: leave });
         } catch (error) {
             next(error);
@@ -115,6 +135,16 @@ class LeaveController {
                 message: `Your ${leave.leaveType} leave request for ${new Date(leave.startDate).toLocaleDateString()} has been rejected.`,
                 type: 'leave'
             });
+
+            // Log Activity
+            const hrNameR = (req as any).user?.name || 'HR';
+            const empR = await Employee.findById(leave.employeeId);
+            await ActivityService.logActivity(
+                'leave_rejected',
+                `${empR?.name || 'Employee'} — Leave Rejected by ${hrNameR}`,
+                empR?.name,
+                hrId
+            );
 
             res.status(200).json({ success: true, data: leave });
         } catch (error) {

@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import PayrollService from '../services/PayrollService';
+import ActivityService from '../services/ActivityService';
+import Employee from '../models/Employee';
 
 class PayrollController {
     /**
@@ -41,6 +43,14 @@ class PayrollController {
             }
 
             const results = await PayrollService.generatePayroll(hrId, month, parseInt(year));
+
+            // Log Activity
+            await ActivityService.logActivity(
+                'payroll_generated',
+                `Payroll generated for ${month} ${year}`,
+                undefined,
+                hrId
+            );
             
             res.status(201).json({ 
                 success: true, 
@@ -62,6 +72,16 @@ class PayrollController {
             if (!payroll) {
                 return res.status(404).json({ success: false, message: 'Payroll record not found' });
             }
+
+            // Log Activity
+            const emp = await Employee.findById(payroll.employeeId);
+            await ActivityService.logActivity(
+                'payroll_paid',
+                `${emp?.name || 'Employee'} — Payroll marked as paid`,
+                emp?.name,
+                (req as any).user?._id
+            );
+
             res.status(200).json({ success: true, data: payroll });
         } catch (error) {
             next(error);

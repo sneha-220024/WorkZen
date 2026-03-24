@@ -17,6 +17,7 @@ import leaveRoutes from './routes/leaveRoutes';
 import payrollRoutes from './routes/payrollRoutes';
 import employeeDashboardRoutes from './routes/employeeDashboardRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import activityRoutes from './routes/activityRoutes';
 
 dotenv.config();
 
@@ -73,6 +74,7 @@ app.use('/api/hr/leaves', protect, checkHR, leaveRoutes);
 app.use('/api/hr/payroll', protect, checkHR, payrollRoutes);
 app.use('/api/hr/payslip', protect, checkHR, payslipRoutes);
 app.use('/api/hr/search', protect, checkHR, searchRoutes);
+app.use('/api/hr/activities', protect, checkHR, activityRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('WorkZen HR Dashboard API is running...');
