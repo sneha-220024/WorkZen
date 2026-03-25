@@ -15,7 +15,7 @@ const PayslipsPage = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.get('http://localhost:5000/api/employee/payroll', {
+            const response = await axios.get('http://localhost:5001/api/employee/payroll', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -56,7 +56,7 @@ const PayslipsPage = () => {
             const token = JSON.parse(userStr).token;
 
             const response = await axios({
-                url: `http://localhost:5000/api/employee/payslip/download/${payslip.id}`,
+                url: `http://localhost:5001/api/employee/payslip/download/${payslip.id}`,
                 method: 'GET',
                 responseType: 'blob',
                 headers: { Authorization: `Bearer ${token}` }

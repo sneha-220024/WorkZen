@@ -18,9 +18,9 @@ class PayrollController {
             const limit = parseInt(req.query.limit as string) || 20;
 
             const { payrolls, total } = await PayrollService.getHRPayroll(hrId, page, limit);
-            
-            res.status(200).json({ 
-                success: true, 
+
+            res.status(200).json({
+                success: true,
                 data: payrolls,
                 total,
                 page,
@@ -40,9 +40,9 @@ class PayrollController {
             const hrId = req.user._id;
 
             if (!month || !year) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Month and year are required' 
+                return res.status(400).json({
+                    success: false,
+                    message: 'Month and year are required'
                 });
             }
 
@@ -55,21 +55,21 @@ class PayrollController {
                 undefined,
                 hrId
             );
-            
+
             // Background task: Async send payslips to employees for the newly generated records.
             (async () => {
                 for (const payroll of results) {
                     try {
                         const employee: any = await Employee.findById(payroll.employeeId);
                         if (!employee || !employee.email) continue;
-                        
+
                         // Ensure PDF is generated/fetched
                         await PayslipService.generatePayslip(payroll._id.toString());
-                        
+
                         // Construct file path for attachment
                         const fileName = `Payslip_${employee.employeeId}_${payroll.month}_${payroll.year}.pdf`;
                         const pdfPath = path.join(process.cwd(), 'uploads', 'payslips', fileName);
-                        
+
                         const subject = `Your Payslip for ${payroll.month} ${payroll.year}`;
                         const html = `
                             <p>Hi ${employee.firstName},</p>
@@ -102,10 +102,10 @@ class PayrollController {
                 }
             })();
 
-            res.status(201).json({ 
-                success: true, 
+            res.status(201).json({
+                success: true,
                 message: `Payroll generation complete. ${results.length} records created.`,
-                data: results 
+                data: results
             });
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message });

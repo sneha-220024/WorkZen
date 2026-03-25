@@ -88,11 +88,11 @@ const EmployeeModal = ({ isOpen, onClose, onRefresh, mode = 'add', employeeData 
 
             let response;
             if (mode === 'add') {
-                response = await axios.post('http://localhost:5000/api/hr/employees', payload, {
+                response = await axios.post('http://localhost:5001/api/hr/employees', payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             } else if (mode === 'edit') {
-                response = await axios.put(`http://localhost:5000/api/hr/employees/${employeeData._id}`, payload, {
+                response = await axios.put(`http://localhost:5001/api/hr/employees/${employeeData._id}`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }

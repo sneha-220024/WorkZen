@@ -65,7 +65,7 @@ const Employees = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.get(`http://localhost:5000/api/hr/employees?search=${searchTerm}`, {
+            const response = await axios.get(`http://localhost:5001/api/hr/employees?search=${searchTerm}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -114,7 +114,7 @@ const Employees = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.delete(`http://localhost:5000/api/hr/employees/${id}`, {
+            const response = await axios.delete(`http://localhost:5001/api/hr/employees/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

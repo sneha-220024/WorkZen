@@ -42,7 +42,7 @@ const HRDashboard = () => {
                     }
                 };
 
-                const response = await axios.get('http://localhost:5000/api/hr/dashboard', config);
+                const response = await axios.get('http://localhost:5001/api/hr/dashboard', config);
                 
                 if (response.data.success) {
                     const data = response.data.data;
@@ -70,7 +70,7 @@ const HRDashboard = () => {
                 };
 
                 const limit = expand ? 50 : 5;
-                const response = await axios.get(`http://localhost:5000/api/hr/activities?limit=${limit}`, config);
+                const response = await axios.get(`http://localhost:5001/api/hr/activities?limit=${limit}`, config);
                 if (response.data.success) {
                     setActivities(response.data.data);
                 }
