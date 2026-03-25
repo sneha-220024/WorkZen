@@ -149,11 +149,12 @@ class EmployeeController {
                     html
                 }); // Fire and forget
             }
+
             // Log Activity
-            const hrName = req.user?.name || 'HR';
+            const logHrName = req.user?.name || 'HR';
             await ActivityService.logActivity(
                 'employee_added',
-                `${employee.name} — Added to the system by ${hrName}`,
+                `${employee.name} — Added to the system by ${logHrName}`,
                 employee.name,
                 req.user?._id
             );
