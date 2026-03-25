@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import PayslipService from '../services/PayslipService';
+import ActivityService from '../services/ActivityService';
+import Payroll from '../models/Payroll';
+import Employee from '../models/Employee';
 import path from 'path';
 import fs from 'fs';
 
@@ -11,6 +14,17 @@ class PayslipController {
         try {
             const { payrollId } = req.params;
             const payslip = await PayslipService.generatePayslip(payrollId);
+
+            // Log Activity
+            const payroll = await Payroll.findById(payrollId);
+            const emp = await Employee.findById(payroll?.employeeId);
+            await ActivityService.logActivity(
+                'payslip_generated',
+                `${emp?.name || 'Employee'} — Payslip generated`,
+                emp?.name,
+                (req as any).user?._id
+            );
+
             res.status(201).json({ success: true, data: payslip });
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message });
@@ -30,6 +44,15 @@ class PayslipController {
             }
 
             const results = await PayslipService.generateAllPayslips(hrId, month, parseInt(year));
+
+            // Log Activity
+            await ActivityService.logActivity(
+                'payslip_generated_all',
+                `All payslips generated for ${month} ${year}`,
+                undefined,
+                hrId
+            );
+
             res.status(201).json({ success: true, message: `${results.length} payslips generated.`, data: results });
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message });

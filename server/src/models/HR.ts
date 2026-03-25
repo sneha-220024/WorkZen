@@ -8,6 +8,7 @@ export interface IHR extends Document {
     name: string;
     email: string;
     password?: string;
+    googleId?: string;
     role: 'hr';
     companyId?: string;
     createdAt?: Date;
@@ -30,8 +31,12 @@ const hrSchema: Schema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Please add a password'],
+        required: false,   // optional — Google OAuth users have no password
         minlength: 6,
+        select: false
+    },
+    googleId: {
+        type: String,
         select: false
     },
     role: {
@@ -48,10 +53,10 @@ const hrSchema: Schema = new mongoose.Schema({
     }
 });
 
-// Encrypt password using bcrypt
+// Encrypt password using bcrypt (skip for Google OAuth users who have no password)
 hrSchema.pre('save', async function (this: any, next) {
-    if (!this.isModified('password')) {
-        next();
+    if (!this.isModified('password') || !this.password) {
+        return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { Search } from 'lucide-react';
+import { Search, BarChart2, User } from 'lucide-react';
+import AttendanceAnalyticsModal from '../components/attendance/AttendanceAnalyticsModal';
+import GlobalSearchBar from '../components/common/GlobalSearchBar';
 
 // --- Avatar colors ---
 const AVATAR_COLORS = [
@@ -38,9 +40,16 @@ const StatusBadge = ({ status }) => {
 
 const HRAttendance = () => {
     const { user } = useContext(AuthContext);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [attendanceData, setAttendanceData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openAnalytics = (rec) => {
+        setSelectedEmployee(rec.employeeId ? `${rec.employeeId.firstName} ${rec.employeeId.lastName}` : 'Employee');
+        setIsModalOpen(true);
+    };
 
     const fetchAttendance = async () => {
         try {
@@ -68,9 +77,14 @@ const HRAttendance = () => {
         fetchAttendance();
     }, []);
 
-    const filtered = attendanceData.filter((rec) =>
-        `${rec.employeeId?.firstName} ${rec.employeeId?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = useMemo(() => {
+        return attendanceData.filter((rec) => {
+            const fullName = `${rec.employeeId?.firstName || ''} ${rec.employeeId?.lastName || ''}`.trim().toLowerCase();
+            const empId = rec.employeeId?.employeeId?.toLowerCase() || '';
+            const search = debouncedSearchTerm.toLowerCase();
+            return fullName.includes(search) || empId.includes(search);
+        });
+    }, [attendanceData, debouncedSearchTerm]);
 
     const formatTime = (time) => {
         if (!time) return '—';
@@ -84,17 +98,15 @@ const HRAttendance = () => {
                 <p className="text-slate-500 text-sm">Real-time overview of employee check-ins and working hours</p>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative max-w-md mb-8 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search employees..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-sm"
-                />
-            </div>
+            {/* Global Search Bar */}
+            <GlobalSearchBar 
+                data={attendanceData}
+                onSearch={(term) => setDebouncedSearchTerm(term)}
+                placeholder="Search attendance records..."
+                searchKeys={['employeeId.firstName', 'employeeId.lastName', 'employeeId.employeeId']}
+                subtitleKey="employeeId.employeeId"
+                icon={User}
+            />
 
             {/* Table Container */}
             <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
@@ -102,7 +114,7 @@ const HRAttendance = () => {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map((col, i) => (
+                                 {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS', 'ACTION'].map((col, i) => (
                                     <th key={i} className="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                                         {col}
                                     </th>
@@ -121,8 +133,8 @@ const HRAttendance = () => {
                                 </tr>
                             ) : filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-inter">
-                                        No attendance records found for today.
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-inter">
+                                        {debouncedSearchTerm ? 'No records found matching your search.' : 'No attendance records found for today.'}
                                     </td>
                                 </tr>
                             ) : (
@@ -160,8 +172,17 @@ const HRAttendance = () => {
                                                     {rec.totalHours ? `${rec.totalHours.toFixed(2)}h` : '—'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                             <td className="px-6 py-4">
                                                 <StatusBadge status={rec.status} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button 
+                                                    onClick={() => openAnalytics(rec)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/80 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all text-[11px] font-extrabold group"
+                                                >
+                                                    <BarChart2 size={13} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
+                                                    ANALYTICS
+                                                </button>
                                             </td>
                                         </tr>
                                     );
@@ -171,6 +192,12 @@ const HRAttendance = () => {
                     </table>
                 </div>
             </div>
+
+            <AttendanceAnalyticsModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                employeeName={selectedEmployee}
+            />
         </div>
     );
 };

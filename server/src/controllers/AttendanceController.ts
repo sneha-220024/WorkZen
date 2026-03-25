@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import AttendanceService from '../services/AttendanceService';
 import Employee from '../models/Employee';
+import Notification from '../models/Notification';
+import ActivityService from '../services/ActivityService';
 
 /**
  * Controller class to handle Attendance related HTTP requests.
@@ -23,6 +25,25 @@ class AttendanceController {
                 return res.status(400).json({ success: false, message: 'Employee ID is required' });
             }
             const attendance = await AttendanceService.checkIn(employeeId.toString());
+
+            // Create Notification
+            const checkInTimeStr = new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            await Notification.create({
+                employeeId,
+                title: 'Check-in Activity',
+                message: `You checked in today at ${checkInTimeStr}`,
+                type: 'attendance'
+            });
+
+            // Log Activity
+            const emp = await Employee.findById(employeeId);
+            await ActivityService.logActivity(
+                'check_in',
+                `${emp?.name || 'Employee'} — Checked in at ${checkInTimeStr}`,
+                emp?.name,
+                undefined
+            );
+
             res.status(201).json({ success: true, data: attendance });
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message });
@@ -46,6 +67,28 @@ class AttendanceController {
                 return res.status(400).json({ success: false, message: 'Employee ID is required' });
             }
             const attendance = await AttendanceService.checkOut(employeeId.toString());
+
+            // Create Notification
+            if (attendance.checkOutTime) {
+                const checkOutTimeStr = new Date(attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                await Notification.create({
+                    employeeId,
+                    title: 'Check-out Activity',
+                    message: `You checked out today at ${checkOutTimeStr}`,
+                    type: 'attendance'
+                });
+            }
+
+            // Log Activity
+            const empOut = await Employee.findById(employeeId);
+            const checkOutTimeStr = attendance.checkOutTime ? new Date(attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A';
+            await ActivityService.logActivity(
+                'check_out',
+                `${empOut?.name || 'Employee'} — Checked out at ${checkOutTimeStr}`,
+                empOut?.name,
+                undefined
+            );
+
             res.status(200).json({ success: true, data: attendance });
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message });

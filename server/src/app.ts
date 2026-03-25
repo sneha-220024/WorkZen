@@ -18,10 +18,16 @@ import attendanceRoutes from './routes/attendanceRoutes';
 import leaveRoutes from './routes/leaveRoutes';
 import payrollRoutes from './routes/payrollRoutes';
 import employeeDashboardRoutes from './routes/employeeDashboardRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import activityRoutes from './routes/activityRoutes';
+
+dotenv.config();
+
 // Passport config
 import './config/passport';
 
 import payslipRoutes from './routes/payslipRoutes';
+import searchRoutes from './routes/searchRoutes';
 
 const app = express();
 
@@ -60,6 +66,7 @@ app.use('/api/auth', authRoutes);
 
 // Employee Personal Dashboard Routes
 app.use('/api/employee', protect, employeeDashboardRoutes);
+app.use('/api/notifications', protect, notificationRoutes);
 
 // HR Dashboard Routes (Protected)
 app.use('/api/hr/dashboard', protect, checkHR, dashboardRoutes);
@@ -68,6 +75,8 @@ app.use('/api/hr/attendance', protect, checkHR, attendanceRoutes);
 app.use('/api/hr/leaves', protect, checkHR, leaveRoutes);
 app.use('/api/hr/payroll', protect, checkHR, payrollRoutes);
 app.use('/api/hr/payslip', protect, checkHR, payslipRoutes);
+app.use('/api/hr/search', protect, checkHR, searchRoutes);
+app.use('/api/hr/activities', protect, checkHR, activityRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('WorkZen HR Dashboard API is running...');
