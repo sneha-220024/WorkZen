@@ -5,7 +5,6 @@ import Employee from '../models/Employee';
 import emailService from '../services/email.service';
 import path from 'path';
 import ActivityService from '../services/ActivityService';
-import Employee from '../models/Employee';
 
 class PayrollController {
     /**

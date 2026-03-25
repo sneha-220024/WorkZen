@@ -24,6 +24,39 @@ const DUMMY_MONTHLY_DATA = [
 const AttendanceAnalyticsModal = ({ isOpen, onClose, employeeName }) => {
     if (!isOpen) return null;
 
+    const handleExport = () => {
+        // Prepare CSV Content
+        let csvContent = "data:text/csv;charset=utf-8,";
+        
+        // Add Header & Summary
+        csvContent += `Attendance Report for ${employeeName}\n`;
+        csvContent += `Punctuality Score,92%\n`;
+        csvContent += `On-Time Count,188\n`;
+        csvContent += `Late Arrivals,12\n\n`;
+
+        // Add Daily Attendance Trend
+        csvContent += "Daily Trend (Last 7 Days)\n";
+        csvContent += "Day,Hours\n";
+        DUMMY_DAILY_DATA.forEach(row => {
+            csvContent += `${row.day},${row.hours}\n`;
+        });
+
+        csvContent += "\nMonthly Attendance Rate (Yearly View)\n";
+        csvContent += "Month,Rate (%)\n";
+        DUMMY_MONTHLY_DATA.forEach(row => {
+            csvContent += `${row.month},${row.rate}\n`;
+        });
+
+        // Trigger Download
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Attendance_Report_${employeeName.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
             <div className="bg-white rounded-[32px] w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200">
@@ -123,7 +156,7 @@ const AttendanceAnalyticsModal = ({ isOpen, onClose, employeeName }) => {
                     </button>
                     <button 
                         className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-md shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all"
-                        onClick={onClose}
+                        onClick={handleExport}
                     >
                        Export Report
                     </button>
@@ -131,6 +164,7 @@ const AttendanceAnalyticsModal = ({ isOpen, onClose, employeeName }) => {
             </div>
         </div>
     );
+
 };
 
 export default AttendanceAnalyticsModal;
