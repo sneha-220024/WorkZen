@@ -29,7 +29,7 @@ export default function Register() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:5001/api/auth/google';
+        window.location.href = 'http://localhost:5005/api/auth/google';
     };
 
     return (

@@ -24,7 +24,7 @@ const HRPayrollManagement = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.get('http://localhost:5001/api/hr/payroll', {
+            const response = await axios.get('http://localhost:5005/api/hr/payroll', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -51,7 +51,7 @@ const HRPayrollManagement = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.post('http://localhost:5001/api/hr/payroll/generate', {
+            const response = await axios.post('http://localhost:5005/api/hr/payroll/generate', {
                 month: genMonth,
                 year: genYear
             }, {
@@ -76,7 +76,7 @@ const HRPayrollManagement = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.patch(`http://localhost:5001/api/hr/payroll/pay/${id}`, {}, {
+            const response = await axios.patch(`http://localhost:5005/api/hr/payroll/pay/${id}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

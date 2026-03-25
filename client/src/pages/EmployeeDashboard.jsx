@@ -92,10 +92,10 @@ const EmployeeDashboard = () => {
             if (!token) return;
 
             const [statsRes, historyRes] = await Promise.all([
-                axios.get('http://localhost:5001/api/employee/dashboard-stats', {
+                axios.get('http://localhost:5005/api/employee/dashboard-stats', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get('http://localhost:5001/api/employee/attendance/history', {
+                axios.get('http://localhost:5005/api/employee/attendance/history', {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);

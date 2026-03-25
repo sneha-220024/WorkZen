@@ -57,7 +57,7 @@ const HRAttendance = () => {
             const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
             if (!token) return;
 
-            const response = await axios.get('http://localhost:5001/api/hr/attendance/today', {
+            const response = await axios.get('http://localhost:5005/api/hr/attendance/today', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
