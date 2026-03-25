@@ -3,6 +3,7 @@ import EmployeeService from '../services/EmployeeService';
 import { IEmployee } from '../models/Employee';
 import emailService from '../services/email.service';
 import ActivityService from '../services/ActivityService';
+import HR from '../models/HR';
 
 /**
  * Controller class to handle Employee related HTTP requests.
@@ -44,7 +45,7 @@ class EmployeeController {
             if (!employee) {
                 return res.status(404).json({ success: false, message: 'Employee not found' });
             }
-            
+
             // HR can only see employees they added
             if (req.user.role === 'hr') {
                 const isOwner = employee.addedBy?.toString() === req.user._id.toString() || employee.hrId?.toString() === req.user._id.toString();
@@ -150,10 +151,10 @@ class EmployeeController {
                 }); // Fire and forget
             }
             // Log Activity
-            const hrName = req.user?.name || 'HR';
+            const activityHrName = req.user?.name || 'HR';
             await ActivityService.logActivity(
                 'employee_added',
-                `${employee.name} — Added to the system by ${hrName}`,
+                `${employee.name} — Added to the system by ${activityHrName}`,
                 employee.name,
                 req.user?._id
             );
@@ -230,6 +231,60 @@ class EmployeeController {
             );
 
             res.status(200).json({ success: true, message: 'Employee deactivated successfully' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Process employee onboarding.
+     */
+    static async onboardEmployee(req: any, res: Response, next: NextFunction) {
+        try {
+            const { hrEmail, department } = req.body;
+            const authUserId = req.user?._id;
+            const authUserEmail = req.user?.email;
+
+            if (!authUserId) {
+                return res.status(401).json({ success: false, message: 'Unauthorized' });
+            }
+
+            // Find employee by ID or Email (robust lookup)
+            let employee = await EmployeeService.getEmployeeById(authUserId.toString());
+            if (!employee && authUserEmail) {
+                employee = await EmployeeService.getEmployeeByEmail(authUserEmail);
+            }
+
+            if (!employee) {
+                return res.status(404).json({ success: false, message: 'Employee profile not found' });
+            }
+
+            const employeeId = employee._id.toString();
+
+            let hrId = null;
+            let unassignedHrEmail = '';
+
+            if (hrEmail) {
+                const hr = await HR.findOne({ email: hrEmail.toLowerCase().trim() });
+                if (hr) {
+                    hrId = hr._id;
+                } else {
+                    unassignedHrEmail = hrEmail.toLowerCase().trim();
+                }
+            }
+
+            const updateData: any = { department };
+            if (hrId) {
+                updateData.hrId = hrId;
+                updateData.unassignedHrEmail = '';
+            } else if (unassignedHrEmail) {
+                updateData.unassignedHrEmail = unassignedHrEmail;
+                updateData.hrId = null;
+            }
+
+            const updatedEmployee = await EmployeeService.updateEmployee(employeeId, updateData);
+
+            res.status(200).json({ success: true, data: updatedEmployee });
         } catch (error) {
             next(error);
         }

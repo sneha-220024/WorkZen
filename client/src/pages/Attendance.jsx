@@ -39,7 +39,7 @@ export default function Attendance() {
             setLoading(true);
             const token = getToken();
             if (!token) return;
-            const res = await axios.get('http://localhost:5000/api/employee/attendance/history', {
+            const res = await axios.get('http://localhost:5001/api/employee/attendance/history', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const records = res.data.data || [];
@@ -67,7 +67,7 @@ export default function Attendance() {
         try {
             setCheckInLoading(true);
             const res = await axios.post(
-                'http://localhost:5000/api/employee/attendance/check-in',
+                'http://localhost:5001/api/employee/attendance/check-in',
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -86,7 +86,7 @@ export default function Attendance() {
         try {
             setCheckOutLoading(true);
             const res = await axios.post(
-                'http://localhost:5000/api/employee/attendance/check-out',
+                'http://localhost:5001/api/employee/attendance/check-out',
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );

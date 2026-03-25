@@ -23,6 +23,7 @@ import { HRRoute, EmployeeRoute } from '../components/common/RoleRoute.jsx';
 import { AuthContext } from '../context/AuthContext.jsx';
 import HRLayout from '../components/common/HRLayout.jsx';
 import HRNotificationsPanel from '../components/notifications/HRNotificationsPanel.jsx';
+import Onboarding from '../pages/Onboarding.jsx';
 
 export default function AppRoutes() {
     return (
@@ -30,6 +31,7 @@ export default function AppRoutes() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/onboarding" element={<ProtectedRoute><EmployeeRoute><Onboarding /></EmployeeRoute></ProtectedRoute>} />
 
             <Route
                 path="/dashboard"

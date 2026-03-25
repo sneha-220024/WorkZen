@@ -17,7 +17,7 @@ const LeaveManagement = () => {
             setLoading(true);
             const token = user?.token;
             if (!token) return;
-            const res = await axios.get('http://localhost:5000/api/employee/leaves/history', {
+            const res = await axios.get('http://localhost:5001/api/employee/leaves/history', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -47,7 +47,7 @@ const LeaveManagement = () => {
                 reason: leaveData.reason
             };
 
-            const res = await axios.post('http://localhost:5000/api/employee/leaves/apply', payload, {
+            const res = await axios.post('http://localhost:5001/api/employee/leaves/apply', payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

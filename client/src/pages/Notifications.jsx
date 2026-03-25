@@ -36,7 +36,7 @@ const Notifications = () => {
 
             // If user is HR, fetch from activities API
             if (user.role === 'hr') {
-                const response = await axios.get('http://localhost:5000/api/hr/activities', config);
+                const response = await axios.get('http://localhost:5001/api/hr/activities', config);
                 if (response.data.success) {
                     const mapped = response.data.data.map(act => {
                         const [employeeName, actionPart] = act.message.split(' — ');
@@ -73,8 +73,8 @@ const Notifications = () => {
             } else {
                 // Keep existing employee notification logic
                 const [attendanceRes, leavesRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/employee/attendance/history', config).catch(() => ({ data: { success: false, data: [] } })),
-                    axios.get('http://localhost:5000/api/employee/leaves/history', config).catch(() => ({ data: { success: false, data: [] } }))
+                    axios.get('http://localhost:5001/api/employee/attendance/history', config).catch(() => ({ data: { success: false, data: [] } })),
+                    axios.get('http://localhost:5001/api/employee/leaves/history', config).catch(() => ({ data: { success: false, data: [] } }))
                 ]);
 
                 const allNotifications = [];
@@ -214,7 +214,7 @@ const Notifications = () => {
                 headers: { Authorization: `Bearer ${token}` }
             };
 
-            const response = await axios.patch('http://localhost:5000/api/hr/activities/read-all', {}, config);
+            const response = await axios.patch('http://localhost:5001/api/hr/activities/read-all', {}, config);
             if (response.data.success) {
                 setNotifications(notifications.map(n => ({ ...n, isRead: true })));
             }

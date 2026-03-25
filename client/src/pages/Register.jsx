@@ -1,4 +1,4 @@
-﻿import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import Button from '../components/common/Button.jsx';
@@ -21,7 +21,7 @@ export default function Register() {
 
         const result = await register(name, email, password, role);
         if (result.success) {
-            navigate(role === 'hr' ? '/dashboard/hr' : '/dashboard/employee');
+            navigate(role === 'hr' ? '/dashboard/hr' : '/onboarding');
         } else {
             setError(result.message);
         }
@@ -29,7 +29,7 @@ export default function Register() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        window.location.href = 'http://localhost:5001/api/auth/google';
     };
 
     return (
