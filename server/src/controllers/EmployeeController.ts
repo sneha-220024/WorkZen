@@ -150,6 +150,7 @@ class EmployeeController {
                     html
                 }); // Fire and forget
             }
+
             // Log Activity
             const activityHrName = req.user?.name || 'HR';
             await ActivityService.logActivity(

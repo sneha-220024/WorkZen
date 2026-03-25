@@ -20,9 +20,6 @@ import payrollRoutes from './routes/payrollRoutes';
 import employeeDashboardRoutes from './routes/employeeDashboardRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import activityRoutes from './routes/activityRoutes';
-
-dotenv.config();
-
 // Passport config
 import './config/passport';
 
