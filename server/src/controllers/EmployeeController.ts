@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import EmployeeService from '../services/EmployeeService';
 import { IEmployee } from '../models/Employee';
+import emailService from '../services/email.service';
 
 /**
  * Controller class to handle Employee related HTTP requests.
@@ -80,11 +81,36 @@ class EmployeeController {
         try {
             const employeeData: Partial<IEmployee> = req.body;
             const userRole = req.user?.role?.toLowerCase();
+            let hrName = "HR Team";
+            let companyName = "WorkZen";
+
             if (req.user && userRole === 'hr') {
                 employeeData.addedBy = req.user._id;
                 employeeData.hrId = req.user._id;
+                if (req.user.firstName) {
+                    hrName = `${req.user.firstName} ${req.user.lastName || ''}`.trim();
+                }
             }
             const employee = await EmployeeService.createEmployee(employeeData);
+
+            // Trigger Welcome Email asynchronously (non-blocking)
+            if (employee.email) {
+                const subject = `Welcome to ${companyName}`;
+                const html = `
+                    <h2>Welcome, ${employee.name || employee.firstName}!</h2>
+                    <p>You have been successfully added to our system.</p>
+                    <p><strong>Role:</strong> ${employee.designation || 'Employee'}</p>
+                    <br/>
+                    <p>Best regards,</p>
+                    <p>${hrName} / ${companyName}</p>
+                `;
+                emailService.sendEmail({
+                    to: employee.email,
+                    subject,
+                    html
+                }); // Fire and forget
+            }
+
             res.status(201).json({ success: true, data: employee });
         } catch (error) {
             next(error);

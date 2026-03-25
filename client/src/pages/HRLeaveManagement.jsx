@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { Search, Check, X } from 'lucide-react';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const HRLeaveManagement = () => {
     const { user } = useContext(AuthContext);
@@ -45,10 +46,14 @@ const HRLeaveManagement = () => {
             });
 
             if (response.data.success) {
+                toast.success(`Leave ${action}d successfully`);
                 fetchLeaves();
+            } else {
+                toast.error(`Failed to ${action} leave`);
             }
         } catch (error) {
             console.error(`Error ${action}ing leave`, error);
+            toast.error(error.response?.data?.message || `Error attempting to ${action} leave`);
         }
     };
 

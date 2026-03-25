@@ -28,6 +28,8 @@ export interface IEmployee {
     emergencyContact: string;
     addedBy?: mongoose.Types.ObjectId; // HR who added this employee
     hrId?: mongoose.Types.ObjectId; // Consistent with requirement
+    attendancePercentage?: number; // Automatic Attendance Percentage Tracking
+    lastAttendanceEmailSent?: Date; // Prevent spamming notifications
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -137,6 +139,13 @@ const EmployeeSchema: Schema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'HR', // Will point to new HR model if created, or User
             index: true,
+        },
+        attendancePercentage: {
+            type: Number,
+            default: 100, // Starts at 100%
+        },
+        lastAttendanceEmailSent: {
+            type: Date,
         },
     },
     {

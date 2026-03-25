@@ -65,7 +65,12 @@ class AttendanceService {
 
         attendance.checkOutTime = new Date();
         // pre-save hook in model will calculate totalHours
-        return await attendance.save();
+        const savedAttendance = await attendance.save();
+
+        // Calculate attendance % and notify if critically low
+        await AttendanceService.updateAttendanceAndNotify(employeeId);
+
+        return savedAttendance;
     }
 
     /**
@@ -94,6 +99,46 @@ class AttendanceService {
      */
     static async getEmployeeAttendanceHistory(employeeId: string): Promise<IAttendanceDocument[]> {
         return await Attendance.find({ employeeId }).sort({ date: -1 });
+    }
+
+    /**
+     * Calculates the employee's attendance percentage for the current month and sends alerts if low.
+     * @param {string} employeeId MongoDB ID of the employee
+     */
+    static async updateAttendanceAndNotify(employeeId: string): Promise<void> {
+        try {
+            const employee = await Employee.findById(employeeId);
+            if (!employee) return;
+
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            // Calculate total expected working days (Mon-Fri) from start of month till today
+            let workingDays = 0;
+            for (let d = new Date(startOfMonth); d <= now; d.setDate(d.getDate() + 1)) {
+                if (d.getDay() !== 0 && d.getDay() !== 6) { // 0 = Sunday, 6 = Saturday
+                    workingDays++;
+                }
+            }
+            if (workingDays === 0) workingDays = 1;
+
+            // Total present instances this month
+            const presentDays = await Attendance.countDocuments({
+                employeeId,
+                date: { $gte: startOfMonth },
+                status: { $in: ['Present', 'Late', 'Half Day'] }
+            });
+
+            // Calculate percentage
+            const attendancePercentage = Number(((presentDays / workingDays) * 100).toFixed(2));
+            
+            // Update the Employee document
+            employee.attendancePercentage = attendancePercentage;
+
+            await employee.save();
+        } catch (error) {
+            console.error('[AttendanceService] updateAttendanceAndNotify Error:', error);
+        }
     }
 }
 
