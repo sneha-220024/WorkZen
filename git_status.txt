@@ -1,0 +1,34 @@
+﻿On branch email_automation
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   client/package-lock.json
+	modified:   client/src/pages/EmployeeDashboard.jsx
+	modified:   client/src/pages/HRLeaveManagement.jsx
+	new file:   server/error.log
+	new file:   server/output.log
+	modified:   server/src/app.ts
+	modified:   server/src/controllers/EmployeeController.ts
+	modified:   server/src/controllers/PayrollController.ts
+	modified:   server/src/models/Employee.ts
+	modified:   server/src/services/AttendanceService.ts
+	modified:   server/src/services/DashboardService.ts
+	modified:   server/src/services/LeaveService.ts
+	new file:   server/src/services/email.service.ts
+	new file:   server/testemail.js
+	new file:   server/testemail.ts
+	new file:   server/uploads/payslips/Payslip_EMP007_March_2026.pdf
+	new file:   server/uploads/payslips/Payslip_EMP008_March_2026.pdf
+	new file:   server/uploads/payslips/Payslip_EMP009_March_2026.pdf
+	new file:   server/uploads/payslips/Payslip_EMP010_March_2026.pdf
+	new file:   server/uploads/payslips/Payslip_EMP011_March_2026.pdf
+	new file:   server/uploads/payslips/Payslip_EMP013_March_2026.pdf
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   git_diff.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status.txt
+

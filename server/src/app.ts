@@ -1,9 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import passport from 'passport';
 import session from 'express-session';
 import path from 'path';
-import dotenv from 'dotenv';
 import { errorHandler } from './middlewares/errorMiddleware';
 import { protect } from './middlewares/authMiddleware';
 import { checkHR } from './middlewares/roleMiddleware';

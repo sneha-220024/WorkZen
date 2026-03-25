@@ -111,7 +111,8 @@ class DashboardService {
             presentDays,
             leaveBalance,
             overtimeHours,
-            notificationsCount: 3 // Placeholder
+            notificationsCount: 3, // Placeholder
+            attendancePercentage: employee.attendancePercentage || 100
         };
     }
 }

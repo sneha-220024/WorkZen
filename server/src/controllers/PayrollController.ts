@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import PayrollService from '../services/PayrollService';
+import PayslipService from '../services/PayslipService';
+import Employee from '../models/Employee';
+import emailService from '../services/email.service';
+import path from 'path';
 import ActivityService from '../services/ActivityService';
 import Employee from '../models/Employee';
 
@@ -52,6 +56,52 @@ class PayrollController {
                 hrId
             );
             
+            // Background task: Async send payslips to employees for the newly generated records.
+            (async () => {
+                for (const payroll of results) {
+                    try {
+                        const employee: any = await Employee.findById(payroll.employeeId);
+                        if (!employee || !employee.email) continue;
+                        
+                        // Ensure PDF is generated/fetched
+                        await PayslipService.generatePayslip(payroll._id.toString());
+                        
+                        // Construct file path for attachment
+                        const fileName = `Payslip_${employee.employeeId}_${payroll.month}_${payroll.year}.pdf`;
+                        const pdfPath = path.join(process.cwd(), 'uploads', 'payslips', fileName);
+                        
+                        const subject = `Your Payslip for ${payroll.month} ${payroll.year}`;
+                        const html = `
+                            <p>Hi ${employee.firstName},</p>
+                            <p>Your payroll for <strong>${payroll.month} ${payroll.year}</strong> has been generated.</p>
+                            <div style="border: 1px solid #ccc; padding: 10px; margin-top: 10px; margin-bottom: 20px;">
+                                <h3>Salary Summary</h3>
+                                <p><strong>Base Salary:</strong> $${payroll.baseSalary.toLocaleString()}</p>
+                                <p><strong>Net Salary:</strong> $${payroll.netSalary.toLocaleString()}</p>
+                            </div>
+                            <p>Please find your detailed payslip attached to this email.</p>
+                            <br/>
+                            <p>Best regards,</p>
+                            <p>WorkZen HR Team</p>
+                        `;
+
+                        await emailService.sendEmail({
+                            to: employee.email,
+                            subject,
+                            html,
+                            attachments: [
+                                {
+                                    filename: fileName,
+                                    path: pdfPath
+                                }
+                            ]
+                        });
+                    } catch (error) {
+                        console.error(`[PayrollController] Failed to send email for payroll ${payroll._id}:`, error);
+                    }
+                }
+            })();
+
             res.status(201).json({ 
                 success: true, 
                 message: `Payroll generation complete. ${results.length} records created.`,

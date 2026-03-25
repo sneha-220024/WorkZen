@@ -1,6 +1,7 @@
 import Leave, { ILeave, ILeaveDocument } from '../models/Leave';
 import Employee from '../models/Employee';
 import mongoose from 'mongoose';
+import emailService from './email.service';
 
 /**
  * Service class for Leave management business logic.
@@ -47,7 +48,7 @@ class LeaveService {
      * @returns {Promise<ILeave | null>}
      */
     static async approveLeave(leaveId: string, hrId: string): Promise<ILeaveDocument | null> {
-        return await Leave.findByIdAndUpdate(
+        const leave = await Leave.findByIdAndUpdate(
             leaveId,
             {
                 status: 'Approved',
@@ -56,6 +57,20 @@ class LeaveService {
             },
             { new: true }
         );
+
+        // Send Email Notification for Approval
+        if (leave && leave.employeeId) {
+            const employee = await Employee.findById(leave.employeeId);
+            if (employee && employee.email) {
+                await emailService.sendEmail({
+                    to: employee.email,
+                    subject: 'Leave Approved',
+                    html: '<p>Your leave request has been approved by HR.</p>'
+                });
+            }
+        }
+
+        return leave;
     }
 
     /**
@@ -65,7 +80,7 @@ class LeaveService {
      * @returns {Promise<ILeave | null>}
      */
     static async rejectLeave(leaveId: string, hrId: string): Promise<ILeaveDocument | null> {
-        return await Leave.findByIdAndUpdate(
+        const leave = await Leave.findByIdAndUpdate(
             leaveId,
             {
                 status: 'Rejected',
@@ -74,6 +89,8 @@ class LeaveService {
             },
             { new: true }
         );
+
+        return leave;
     }
 }
 

@@ -106,7 +106,7 @@ const EmployeeDashboard = () => {
                     { label: 'Present Days', count: s.presentDays, description: 'This month', icon: Clock, color: 'bg-blue-500', textColor: 'text-blue-600', bgColor: 'bg-blue-50' },
                     { label: 'Leave Balance', count: s.leaveBalance, description: 'Days remaining', icon: Calendar, color: 'bg-emerald-500', textColor: 'text-emerald-600', bgColor: 'bg-emerald-50' },
                     { label: 'Overtime Hours', count: s.overtimeHours, description: 'This month', icon: TrendingUp, color: 'bg-orange-500', textColor: 'text-orange-600', bgColor: 'bg-orange-50' },
-                    { label: 'Notifications', count: s.notificationsCount, description: 'Unread', icon: Bell, color: 'bg-primary', textColor: 'text-primary', bgColor: 'bg-indigo-50' },
+                    { label: 'Attendance %', count: s.attendancePercentage ? `${s.attendancePercentage}%` : '100%', description: 'This month', icon: TrendingUp, color: 'bg-primary', textColor: 'text-primary', bgColor: 'bg-indigo-50' },
                 ]);
             }
 

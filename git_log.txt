@@ -1,0 +1,38 @@
+﻿commit 724fb4e8476c0edcc0bb266ffccf8cf7ccd68954
+Merge: e890944 1e9e247
+Author: sneha-220024 <n220024@rguktn.ac.in>
+Date:   Tue Mar 17 08:44:46 2026 +0530
+
+    Merge pull request #16 from sneha-220024/feature/empandhrdashboard
+    
+    HR and emp dashboard backend
+
+commit 1e9e2472755ac566d5457e96da764f306dfa151c
+Author: bhargav-220396 <n220396@rguktn.ac.in>
+Date:   Tue Mar 17 00:11:03 2026 +0530
+
+    HR and emp dashboard backend
+
+commit e8909448a14f72ad06caf7696481b6185b95e53a
+Merge: 4eefb76 c43c739
+Author: sneha-220024 <n220024@rguktn.ac.in>
+Date:   Sat Mar 14 10:32:27 2026 +0530
+
+    Merge pull request #15 from sneha-220024/features/hr_payslip_notifications
+    
+    Added Payslip and Notifications features in HR dashboard
+
+commit c43c739c59dbadd2c6ed66d962f48b4996cae29c
+Author: hajara-221115 <n221115@rguktn.ac.in>
+Date:   Sat Mar 14 00:01:14 2026 +0530
+
+    Added Payslip and Notifications features in HR dashboard
+
+commit 4eefb76d95dd0f9e83de7e9cd59df6eb7a906808
+Merge: 5d8fd4d ba474e7
+Author: sneha-220024 <n220024@rguktn.ac.in>
+Date:   Fri Mar 13 18:06:03 2026 +0530
+
+    Merge pull request #14 from sneha-220024/feature/HR_LM_PR
+    
+    HR leave management and payroll
