@@ -23,7 +23,7 @@ const Payslips = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.get('http://localhost:5001/api/hr/payroll', {
+            const response = await axios.get('http://localhost:5005/api/hr/payroll', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -51,7 +51,7 @@ const Payslips = () => {
             const userStr = localStorage.getItem('user');
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.post('http://localhost:5001/api/hr/payslip/generate-all', {
+            const response = await axios.post('http://localhost:5005/api/hr/payslip/generate-all', {
                 month,
                 year: parseInt(year)
             }, {
@@ -74,7 +74,7 @@ const Payslips = () => {
             const userStr = localStorage.getItem('user');
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.post(`http://localhost:5001/api/hr/payslip/generate/${payrollId}`, {}, {
+            const response = await axios.post(`http://localhost:5005/api/hr/payslip/generate/${payrollId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -92,7 +92,7 @@ const Payslips = () => {
             const token = JSON.parse(userStr).token;
 
             const response = await axios({
-                url: `http://localhost:5001/api/hr/payslip/download/${payrollId}`,
+                url: `http://localhost:5005/api/hr/payslip/download/${payrollId}`,
                 method: 'GET',
                 responseType: 'blob',
                 headers: { Authorization: `Bearer ${token}` }

@@ -18,7 +18,7 @@ const HRLeaveManagement = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.get('http://localhost:5001/api/hr/leaves', {
+            const response = await axios.get('http://localhost:5005/api/hr/leaves', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -40,7 +40,7 @@ const HRLeaveManagement = () => {
             if (!userStr) return;
             const token = JSON.parse(userStr).token;
 
-            const response = await axios.put(`http://localhost:5001/api/hr/leaves/${id}/${action}`, {}, {
+            const response = await axios.put(`http://localhost:5005/api/hr/leaves/${id}/${action}`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
