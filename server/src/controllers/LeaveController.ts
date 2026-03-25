@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import LeaveService from '../services/LeaveService';
 import Employee from '../models/Employee';
 import Leave from '../models/Leave';
+import Notification from '../models/Notification';
+import ActivityService from '../services/ActivityService';
 
 /**
  * Controller class to handle Leave related HTTP requests.
@@ -24,6 +26,24 @@ class LeaveController {
                 return res.status(400).json({ success: false, message: 'Employee ID is required' });
             }
             const leave = await LeaveService.applyLeave(leaveData);
+
+            // Create Notification
+            await Notification.create({
+                employeeId: leave.employeeId,
+                title: 'Leave Applied',
+                message: `Your ${leave.leaveType} leave request for ${new Date(leave.startDate).toLocaleDateString()} is applied and pending approval.`,
+                type: 'leave'
+            });
+
+            // Log Activity
+            const employeeName = req.user?.name || 'An employee';
+            await ActivityService.logActivity(
+                'leave_applied',
+                `${employeeName} — Applied for leave`,
+                employeeName,
+                req.user?._id
+            );
+
             res.status(201).json({ success: true, data: leave });
         } catch (error: any) {
             res.status(400).json({ success: false, message: error.message });
@@ -71,6 +91,25 @@ class LeaveController {
             if (!leave) {
                 return res.status(404).json({ success: false, message: 'Leave request not found' });
             }
+
+            // Create Notification for Employee
+            await Notification.create({
+                employeeId: leave.employeeId,
+                title: 'Leave Approved',
+                message: `Your ${leave.leaveType} leave request for ${new Date(leave.startDate).toLocaleDateString()} has been approved.`,
+                type: 'leave'
+            });
+
+            // Log Activity
+            const hrName = (req as any).user?.name || 'HR';
+            const emp = await Employee.findById(leave.employeeId);
+            await ActivityService.logActivity(
+                'leave_approved',
+                `${emp?.name || 'Employee'} — Leave Approved by ${hrName}`,
+                emp?.name,
+                hrId
+            );
+
             res.status(200).json({ success: true, data: leave });
         } catch (error) {
             next(error);
@@ -88,6 +127,25 @@ class LeaveController {
             if (!leave) {
                 return res.status(404).json({ success: false, message: 'Leave request not found' });
             }
+
+            // Create Notification for Employee
+            await Notification.create({
+                employeeId: leave.employeeId,
+                title: 'Leave Rejected',
+                message: `Your ${leave.leaveType} leave request for ${new Date(leave.startDate).toLocaleDateString()} has been rejected.`,
+                type: 'leave'
+            });
+
+            // Log Activity
+            const hrNameR = (req as any).user?.name || 'HR';
+            const empR = await Employee.findById(leave.employeeId);
+            await ActivityService.logActivity(
+                'leave_rejected',
+                `${empR?.name || 'Employee'} — Leave Rejected by ${hrNameR}`,
+                empR?.name,
+                hrId
+            );
+
             res.status(200).json({ success: true, data: leave });
         } catch (error) {
             next(error);

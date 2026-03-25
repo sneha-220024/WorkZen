@@ -1,12 +1,13 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { Search, Check, X } from 'lucide-react';
+import { Search, Check, X, Calendar } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import GlobalSearchBar from '../components/common/GlobalSearchBar';
 
 const HRLeaveManagement = () => {
     const { user } = useContext(AuthContext);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [leaveRequests, setLeaveRequests] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -61,10 +62,15 @@ const HRLeaveManagement = () => {
         fetchLeaves();
     }, []);
 
-    const filteredRequests = leaveRequests.filter(req => 
-        req.employeeId?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.employeeId?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredRequests = useMemo(() => {
+        return leaveRequests.filter(req => {
+            const firstName = req.employeeId?.firstName?.toLowerCase() || '';
+            const lastName = req.employeeId?.lastName?.toLowerCase() || '';
+            const empId = req.employeeId?.employeeId?.toLowerCase() || '';
+            const search = debouncedSearchTerm.toLowerCase();
+            return firstName.includes(search) || lastName.includes(search) || empId.includes(search);
+        });
+    }, [leaveRequests, debouncedSearchTerm]);
 
     const getInitials = (name) => {
         if (!name) return '??';
@@ -118,17 +124,15 @@ const HRLeaveManagement = () => {
                 ))}
             </div>
 
-            {/* Search Bar */}
-            <div className="relative max-w-md mb-8 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search employees..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-sm"
-                />
-            </div>
+            {/* Global Search Bar */}
+            <GlobalSearchBar 
+                data={leaveRequests}
+                onSearch={(term) => setDebouncedSearchTerm(term)}
+                placeholder="Search leave applications..."
+                searchKeys={['employeeId.firstName', 'employeeId.lastName', 'employeeId.employeeId']}
+                subtitleKey="leaveType"
+                icon={Calendar}
+            />
 
             {/* Table Container */}
             <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">

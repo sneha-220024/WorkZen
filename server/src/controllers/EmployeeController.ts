@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import EmployeeService from '../services/EmployeeService';
 import { IEmployee } from '../models/Employee';
 import emailService from '../services/email.service';
+import ActivityService from '../services/ActivityService';
 
 /**
  * Controller class to handle Employee related HTTP requests.
@@ -75,6 +76,44 @@ class EmployeeController {
     }
 
     /**
+     * Update profile of currently logged in employee.
+     */
+    static async updateProfile(req: any, res: Response, next: NextFunction) {
+        try {
+            const email = req.user.email;
+            const employee = await EmployeeService.getEmployeeByEmail(email);
+            if (!employee) {
+                return res.status(404).json({ success: false, message: 'Employee profile not found' });
+            }
+
+            const employeeData = req.body;
+            // Fields allowed to be updated by the employee themselves
+            const allowedUpdates: any = {
+                firstName: employeeData.firstName,
+                lastName: employeeData.lastName,
+                name: employeeData.name,
+                phone: employeeData.phone,
+                address: employeeData.address,
+            };
+
+            // Only update password if provided
+            if (employeeData.password) {
+                allowedUpdates.password = employeeData.password;
+            }
+
+            const updatedEmployee = await EmployeeService.updateEmployee(employee._id.toString(), allowedUpdates);
+
+            // Also update Auth user record if necessary. WorkZen auth routes might be using User model
+            // But from EmployeeService create, it seems Employee model might handle login 
+            // In case there is an underlying User model, we might need a UserService but let's stick to Employee for now.
+
+            res.status(200).json({ success: true, data: updatedEmployee });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Create a new employee.
      */
     static async createEmployee(req: any, res: Response, next: NextFunction) {
@@ -111,6 +150,15 @@ class EmployeeController {
                 }); // Fire and forget
             }
 
+            // Log Activity
+            const logHrName = req.user?.name || 'HR';
+            await ActivityService.logActivity(
+                'employee_added',
+                `${employee.name} — Added to the system by ${logHrName}`,
+                employee.name,
+                req.user?._id
+            );
+
             res.status(201).json({ success: true, data: employee });
         } catch (error) {
             next(error);
@@ -137,6 +185,16 @@ class EmployeeController {
 
             const employeeData: Partial<IEmployee> = req.body;
             const updatedEmployee = await EmployeeService.updateEmployee(req.params.id as string, employeeData);
+
+            // Log Activity
+            const hrNameU = req.user?.name || 'HR';
+            await ActivityService.logActivity(
+                'employee_updated',
+                `${updatedEmployee?.name || 'Employee'} — Details updated by ${hrNameU}`,
+                updatedEmployee?.name,
+                req.user?._id
+            );
+
             res.status(200).json({ success: true, data: updatedEmployee });
         } catch (error) {
             next(error);
@@ -162,6 +220,16 @@ class EmployeeController {
             }
 
             await EmployeeService.softDeleteEmployee(req.params.id as string);
+
+            // Log Activity
+            const hrNameD = req.user?.name || 'HR';
+            await ActivityService.logActivity(
+                'employee_deleted',
+                `${employee.name} — Account deactivated by ${hrNameD}`,
+                employee.name,
+                req.user?._id
+            );
+
             res.status(200).json({ success: true, message: 'Employee deactivated successfully' });
         } catch (error) {
             next(error);

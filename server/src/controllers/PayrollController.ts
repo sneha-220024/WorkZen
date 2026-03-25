@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import PayrollService from '../services/PayrollService';
 import PayslipService from '../services/PayslipService';
-import Employee from '../models/Employee';
 import emailService from '../services/email.service';
 import path from 'path';
+import ActivityService from '../services/ActivityService';
+import Employee from '../models/Employee';
 
 class PayrollController {
     /**
@@ -45,6 +46,14 @@ class PayrollController {
             }
 
             const results = await PayrollService.generatePayroll(hrId, month, parseInt(year));
+
+            // Log Activity
+            await ActivityService.logActivity(
+                'payroll_generated',
+                `Payroll generated for ${month} ${year}`,
+                undefined,
+                hrId
+            );
             
             // Background task: Async send payslips to employees for the newly generated records.
             (async () => {
@@ -112,6 +121,16 @@ class PayrollController {
             if (!payroll) {
                 return res.status(404).json({ success: false, message: 'Payroll record not found' });
             }
+
+            // Log Activity
+            const emp = await Employee.findById(payroll.employeeId);
+            await ActivityService.logActivity(
+                'payroll_paid',
+                `${emp?.name || 'Employee'} — Payroll marked as paid`,
+                emp?.name,
+                (req as any).user?._id
+            );
+
             res.status(200).json({ success: true, data: payroll });
         } catch (error) {
             next(error);

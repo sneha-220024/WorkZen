@@ -1,11 +1,12 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { Search, DollarSign, Users, Play, CheckCircle } from 'lucide-react';
+import GlobalSearchBar from '../components/common/GlobalSearchBar';
 
 const HRPayrollManagement = () => {
-    useContext(AuthContext);
-    const [searchTerm, setSearchTerm] = useState('');
+    const { user } = useContext(AuthContext);
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [payrollData, setPayrollData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -87,13 +88,16 @@ const HRPayrollManagement = () => {
         }
     };
 
-    const filteredPayroll = payrollData.filter(req => {
-        if (!req.employeeId) return false;
-        const firstName = req.employeeId.firstName?.toLowerCase() || '';
-        const lastName = req.employeeId.lastName?.toLowerCase() || '';
-        const search = searchTerm.toLowerCase();
-        return firstName.includes(search) || lastName.includes(search);
-    });
+    const filteredPayroll = useMemo(() => {
+        return payrollData.filter(req => {
+            if (!req.employeeId) return false;
+            const firstName = req.employeeId.firstName?.toLowerCase() || '';
+            const lastName = req.employeeId.lastName?.toLowerCase() || '';
+            const empId = req.employeeId.employeeId?.toLowerCase() || '';
+            const search = debouncedSearchTerm.toLowerCase();
+            return firstName.includes(search) || lastName.includes(search) || empId.includes(search);
+        });
+    }, [payrollData, debouncedSearchTerm]);
 
     const getInitials = (name) => {
         if (!name) return '??';
@@ -172,17 +176,15 @@ const HRPayrollManagement = () => {
                 </div>
             </div>
 
-             {/* Search Bar */}
-             <div className="relative max-w-md mb-8 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search employees..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-sm"
-                />
-            </div>
+            {/* Global Search Bar */}
+            <GlobalSearchBar 
+                data={payrollData}
+                onSearch={(term) => setDebouncedSearchTerm(term)}
+                placeholder="Search payroll records..."
+                searchKeys={['employeeId.firstName', 'employeeId.lastName', 'employeeId.employeeId']}
+                subtitleKey="employeeId.department"
+                icon={DollarSign}
+            />
 
             {/* Table Container */}
             <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
