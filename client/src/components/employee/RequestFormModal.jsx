@@ -37,8 +37,8 @@ const RequestFormModal = ({ onClose, onSubmit, defaultType }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 pb-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[80vh] flex flex-col">
                 <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-slate-100">
                     <h3 className="text-xl font-bold text-slate-900 font-sora">New Request</h3>
                     <button 
