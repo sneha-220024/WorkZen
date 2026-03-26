@@ -11,7 +11,8 @@ import {
     Bell, 
     Search,
     User as UserIcon,
-    LogOut
+    LogOut,
+    MessageSquare
 } from 'lucide-react';
 import HRNotificationsPanel from '../notifications/HRNotificationsPanel.jsx';
 import HRProfilePopup from './HRProfilePopup.jsx';
@@ -48,6 +49,7 @@ const HRLayout = () => {
         { label: 'Leave Management', icon: ClipboardList, path: '/dashboard/hr/leaves' },
         { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
         { label: 'Payslip', icon: FileText, path: '/dashboard/hr/payslips' },
+        { label: 'Employee Requests', icon: MessageSquare, path: '/dashboard/hr/requests' },
         { label: 'Notifications', icon: Bell, path: '/dashboard/hr/notifications' },
     ];
 

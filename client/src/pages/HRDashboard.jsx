@@ -11,7 +11,8 @@ import {
     Play,
     UserPlus,
     BarChart3,
-    MoreVertical
+    MoreVertical,
+    MessageSquare
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +23,7 @@ const HRDashboard = () => {
         totalEmployees: 0,
         todayAttendance: '0%',
         pendingLeaves: 0,
+        pendingRequests: 0,
         payrollSummary: '$0'
     });
     const [activities, setActivities] = useState([]);
@@ -50,6 +52,7 @@ const HRDashboard = () => {
                         totalEmployees: data.totalEmployees || 0,
                         todayAttendance: `${data.todaysAttendancePercentage || 0}%`,
                         pendingLeaves: data.pendingLeaveRequests || 0,
+                        pendingRequests: data.pendingRequestsCount || 0,
                         payrollSummary: `$${(data.totalPayrollForCurrentMonth || 0).toLocaleString()}`
                     });
                 }
@@ -125,6 +128,7 @@ const HRDashboard = () => {
     const quickActions = [
         { label: 'Add Employee', icon: UserPlus, onClick: () => navigate('/dashboard/hr/employees') },
         { label: 'Approve Leave', icon: CheckCircle, onClick: () => navigate('/dashboard/hr/leaves') },
+        { label: 'Review Requests', icon: MessageSquare, onClick: () => navigate('/dashboard/hr/requests') },
         { label: 'Run Payroll', icon: Play, onClick: () => navigate('/dashboard/hr/payroll') },
     ];
 
@@ -136,7 +140,7 @@ const HRDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 <StatCard 
                     title="Total Employees" 
                     value={stats.totalEmployees} 
@@ -161,6 +165,13 @@ const HRDashboard = () => {
                     value={stats.payrollSummary} 
                     icon={BadgeDollarSign} 
                     color="purple" 
+                />
+                <StatCard 
+                    title="Employee Requests" 
+                    value={stats.pendingRequests} 
+                    icon={MessageSquare} 
+                    color="blue" 
+                    isUrgent={stats.pendingRequests > 0}
                 />
             </div>
 

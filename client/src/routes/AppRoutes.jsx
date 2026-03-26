@@ -26,6 +26,7 @@ import HRLayout from '../components/common/HRLayout.jsx';
 import HRNotificationsPanel from '../components/notifications/HRNotificationsPanel.jsx';
 import Onboarding from '../pages/Onboarding.jsx';
 import RequestCenter from '../pages/RequestCenter.jsx';
+import EmployeeRequests from '../pages/EmployeeRequests.jsx';
 
 export default function AppRoutes() {
     return (
@@ -151,6 +152,7 @@ export default function AppRoutes() {
                 <Route path="leaves" element={<HRLeaveManagement />} />
                 <Route path="payroll" element={<HRPayrollManagement />} />
                 <Route path="payslips" element={<Payslips />} />
+                <Route path="requests" element={<EmployeeRequests />} />
                 <Route path="schedule" element={<SchedulePage />} />
                 <Route path="notifications" element={<HRNotificationsPanel />} />
             </Route>
