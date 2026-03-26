@@ -10,10 +10,10 @@ class ScheduleController {
      */
     static async createSchedule(req: any, res: Response, next: NextFunction) {
         try {
-            const { employeeId, employeeName, employeeEmail, date, time, reason } = req.body;
+            const { employeeId, employeeName, employeeEmail, date, time, reason, meetingLink } = req.body;
 
             // Basic validation
-            if (!employeeId || !employeeName || !employeeEmail || !date || !time || !reason) {
+            if (!employeeId || !employeeName || !employeeEmail || !date || !time || !reason || !meetingLink) {
                 return res.status(400).json({ success: false, message: 'Please provide all required fields' });
             }
 
@@ -26,7 +26,8 @@ class ScheduleController {
                 employeeEmail,
                 date: new Date(date),
                 time,
-                reason
+                reason,
+                meetingLink
             }, hrName, hrId);
 
             res.status(201).json({

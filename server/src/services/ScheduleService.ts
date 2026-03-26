@@ -25,6 +25,7 @@ class ScheduleService {
             <p><strong>Date:</strong> ${new Date(savedSchedule.date).toLocaleDateString()}</p>
             <p><strong>Time:</strong> ${savedSchedule.time}</p>
             <p><strong>Reason:</strong> ${savedSchedule.reason}</p>
+            <p><strong>Meeting Link:</strong> <a href="${savedSchedule.meetingLink}">${savedSchedule.meetingLink}</a></p>
             <br/>
             <p>Please be available at the scheduled time.</p>
             <p>Best regards,</p>

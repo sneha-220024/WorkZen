@@ -7,6 +7,7 @@ export interface ISchedule {
     date: Date;
     time: string;
     reason: 'Meeting' | 'Discussion' | 'Review' | 'Other';
+    meetingLink: string;
     status: 'Scheduled' | 'Completed' | 'Cancelled';
     createdAt?: Date;
     updatedAt?: Date;
@@ -41,6 +42,10 @@ const ScheduleSchema: Schema = new Schema(
             type: String,
             enum: ['Meeting', 'Discussion', 'Review', 'Other'],
             required: [true, 'Reason is required'],
+        },
+        meetingLink: {
+            type: String,
+            required: [true, 'Meeting link is required'],
         },
         status: {
             type: String,
