@@ -15,8 +15,8 @@ const RequestDetailsModal = ({ onClose, request }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-6 border-b border-slate-100">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+                <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-slate-100">
                     <h3 className="text-xl font-bold text-slate-900 font-sora">Request Details</h3>
                     <button 
                         onClick={onClose}
@@ -26,7 +26,7 @@ const RequestDetailsModal = ({ onClose, request }) => {
                     </button>
                 </div>
                 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">
