@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { BadgeDollarSign, AlertTriangle, FileText, Eye } from 'lucide-react';
 import RequestFormModal from '../components/employee/RequestFormModal.jsx';
 import RequestDetailsModal from '../components/employee/RequestDetailsModal.jsx';
+import { getEmployeeRequests, createRequest } from '../services/requestService';
 
 const RequestCenter = () => {
     const { user } = useContext(AuthContext);
@@ -20,19 +21,21 @@ const RequestCenter = () => {
     // Selected request for details
     const [selectedRequest, setSelectedRequest] = useState(null);
 
-    // Initialize with dummy data on mount (since backend is not required)
-    useEffect(() => {
-        // Load from localStorage or mock
-        const stored = localStorage.getItem('workzen_employee_requests');
-        if (stored) {
-            setRequests(JSON.parse(stored));
-        } else {
-            const mock = [
-                { id: 'REQ-001', type: 'General Request', subject: 'New Monitor', date: new Date().toISOString().split('T')[0], status: 'Pending', description: 'Need a new monitor for work', priority: 'Medium' }
-            ];
-            setRequests(mock);
-            localStorage.setItem('workzen_employee_requests', JSON.stringify(mock));
+    const fetchRequests = async () => {
+        try {
+            const res = await getEmployeeRequests();
+            if (res.success) {
+                setRequests(res.data);
+            }
+        } catch (error) {
+            console.error('Error fetching requests', error);
         }
+    };
+
+    useEffect(() => {
+        fetchRequests();
+        const interval = setInterval(fetchRequests, 15000); // poll every 15s
+        return () => clearInterval(interval);
     }, []);
 
     const handleOpenForm = (type = 'General Request') => {
@@ -40,18 +43,23 @@ const RequestCenter = () => {
         setIsFormOpen(true);
     };
 
-    const handleSubmit = (formData) => {
-        const newReq = {
-            id: `REQ-00${requests.length + 2}`,
-            date: new Date().toISOString().split('T')[0],
-            status: 'Pending',
-            ...formData
-        };
-        const updated = [newReq, ...requests];
-        setRequests(updated);
-        localStorage.setItem('workzen_employee_requests', JSON.stringify(updated));
-        toast.success('Request submitted successfully');
-        setIsFormOpen(false);
+    const handleSubmit = async (formData) => {
+        try {
+            const res = await createRequest({
+                type: defaultRequestType,
+                subject: formData.subject || formData.title || 'Request',
+                description: formData.description || formData.reason || '',
+                priority: formData.priority || 'Medium'
+            });
+            if (res.success) {
+                toast.success('Request submitted successfully');
+                setIsFormOpen(false);
+                fetchRequests();
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            toast.error('Failed to submit request');
+        }
     };
 
     const handleViewDetails = (req) => {
@@ -143,11 +151,11 @@ const RequestCenter = () => {
                                 </tr>
                             ) : (
                                 requests.map(req => (
-                                    <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-4 pl-6 text-sm font-medium text-slate-900">{req.id}</td>
+                                    <tr key={req._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                        <td className="p-4 pl-6 text-sm font-medium text-slate-900">{req._id.slice(-6).toUpperCase()}</td>
                                         <td className="p-4 text-sm text-slate-600">{req.type}</td>
                                         <td className="p-4 text-sm text-slate-600 truncate max-w-[200px]">{req.subject}</td>
-                                        <td className="p-4 text-sm text-slate-600">{req.date}</td>
+                                        <td className="p-4 text-sm text-slate-600">{new Date(req.appliedAt).toLocaleDateString()}</td>
                                         <td className="p-4">
                                             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusStyle(req.status)}`}>
                                                 {req.status}

@@ -39,6 +39,7 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
         { label: 'Employees', icon: Users, path: '/dashboard/hr/employees' },
         { label: 'Attendance', icon: Clock, path: '/dashboard/hr/attendance' },
         { label: 'Leaves', icon: ClipboardList, path: '/dashboard/hr/leaves' },
+        { label: 'Employee Requests', icon: HelpCircle, path: '/dashboard/hr/requests' },
         { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
         { label: 'Settings', icon: User, path: '/dashboard/hr/settings', disabled: true },
     ];

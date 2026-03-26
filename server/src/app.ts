@@ -26,6 +26,7 @@ import './config/passport';
 import payslipRoutes from './routes/payslipRoutes';
 import searchRoutes from './routes/searchRoutes';
 import scheduleRoutes from './routes/scheduleRoutes';
+import { employeeRequestRoutes, hrRequestRoutes } from './routes/requestRoutes';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/auth', authRoutes);
 
 // Employee Personal Dashboard Routes
 app.use('/api/employee', protect, employeeDashboardRoutes);
+app.use('/api/employee/requests', protect, employeeRequestRoutes);
 app.use('/api/notifications', protect, notificationRoutes);
 
 // HR Dashboard Routes (Protected)
@@ -76,6 +78,7 @@ app.use('/api/hr/payslip', protect, checkHR, payslipRoutes);
 app.use('/api/hr/search', protect, checkHR, searchRoutes);
 app.use('/api/hr/activities', protect, checkHR, activityRoutes);
 app.use('/api/hr/schedules', protect, checkHR, scheduleRoutes);
+app.use('/api/hr/requests', protect, checkHR, hrRequestRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('WorkZen HR Dashboard API is running...');
