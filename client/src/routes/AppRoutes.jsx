@@ -25,6 +25,7 @@ import { AuthContext } from '../context/AuthContext.jsx';
 import HRLayout from '../components/common/HRLayout.jsx';
 import HRNotificationsPanel from '../components/notifications/HRNotificationsPanel.jsx';
 import Onboarding from '../pages/Onboarding.jsx';
+import RequestCenter from '../pages/RequestCenter.jsx';
 
 export default function AppRoutes() {
     return (
@@ -112,6 +113,24 @@ export default function AppRoutes() {
                     element={
                         <EmployeeRoute>
                             <Settings />
+                        </EmployeeRoute>
+                    }
+                />
+            </Route>
+
+            <Route
+                path="/employee"
+                element={
+                    <ProtectedRoute>
+                        <DashboardLayout />
+                    </ProtectedRoute>
+                }
+            >
+                <Route
+                    path="request-center"
+                    element={
+                        <EmployeeRoute>
+                            <RequestCenter />
                         </EmployeeRoute>
                     }
                 />

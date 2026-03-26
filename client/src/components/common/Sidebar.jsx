@@ -13,7 +13,8 @@ import {
     Home,
     Users,
     ClipboardList,
-    BadgeDollarSign
+    BadgeDollarSign,
+    HelpCircle
 } from 'lucide-react';
 
 const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
@@ -28,6 +29,7 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
         { label: 'My Profile', icon: User, path: '/dashboard/profile' },
         { label: 'Attendance', icon: Clock, path: '/dashboard/attendance' },
         { label: 'Leave Management', icon: CalendarCheck, path: '/dashboard/leaves' },
+        { label: 'Request Center', icon: HelpCircle, path: '/employee/request-center' },
         { label: 'Payslips', icon: FileText, path: '/dashboard/payslips' },
         { label: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
     ];
