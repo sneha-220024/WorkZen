@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { Search, BarChart2, User } from 'lucide-react';
-import AttendanceAnalyticsModal from '../components/attendance/AttendanceAnalyticsModal';
+import { Search, User } from 'lucide-react';
 import GlobalSearchBar from '../components/common/GlobalSearchBar';
 
 // --- Avatar colors ---
@@ -43,13 +42,6 @@ const HRAttendance = () => {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [attendanceData, setAttendanceData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const openAnalytics = (rec) => {
-        setSelectedEmployee(rec.employeeId ? `${rec.employeeId.firstName} ${rec.employeeId.lastName}` : 'Employee');
-        setIsModalOpen(true);
-    };
 
     const fetchAttendance = async () => {
         try {
@@ -114,7 +106,7 @@ const HRAttendance = () => {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                 {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS', 'ACTION'].map((col, i) => (
+                                 {['EMPLOYEE', 'DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map((col, i) => (
                                     <th key={i} className="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                                         {col}
                                     </th>
@@ -133,7 +125,7 @@ const HRAttendance = () => {
                                 </tr>
                             ) : filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-inter">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-inter">
                                         {debouncedSearchTerm ? 'No records found matching your search.' : 'No attendance records found for today.'}
                                     </td>
                                 </tr>
@@ -175,15 +167,7 @@ const HRAttendance = () => {
                                              <td className="px-6 py-4">
                                                 <StatusBadge status={rec.status} />
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <button 
-                                                    onClick={() => openAnalytics(rec)}
-                                                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/80 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all text-[11px] font-extrabold group"
-                                                >
-                                                    <BarChart2 size={13} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
-                                                    ANALYTICS
-                                                </button>
-                                            </td>
+
                                         </tr>
                                     );
                                 })
@@ -193,11 +177,7 @@ const HRAttendance = () => {
                 </div>
             </div>
 
-            <AttendanceAnalyticsModal 
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                employeeName={selectedEmployee}
-            />
+
         </div>
     );
 };
