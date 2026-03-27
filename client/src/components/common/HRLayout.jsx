@@ -13,7 +13,8 @@ import {
     User as UserIcon,
     LogOut,
     MessageSquare,
-    BarChart3
+    BarChart3,
+    Home
 } from 'lucide-react';
 import HRNotificationsPanel from '../notifications/HRNotificationsPanel.jsx';
 import HRProfilePopup from './HRProfilePopup.jsx';
@@ -169,6 +170,15 @@ const HRLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
+                        {/* Home Button */}
+                        <button 
+                            onClick={() => navigate('/')}
+                            className="relative p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors group"
+                            title="Home"
+                        >
+                            <Home size={22} className="group-hover:text-blue-600 transition-colors" />
+                        </button>
+
                         <button 
                             onClick={() => setShowNotifications(!showNotifications)}
                             className={`relative p-2 rounded-xl transition-colors ${showNotifications ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}
