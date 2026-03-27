@@ -1,6 +1,6 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { Search, Bell, User, Clock } from 'lucide-react';
+import { Search, Bell, User, Clock, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileDropdown from './ProfileDropdown.jsx';
 
@@ -107,6 +107,15 @@ const DashboardHeader = () => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-6">
+                {/* Home */}
+                <button 
+                    onClick={() => navigate('/')}
+                    className="relative p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors group"
+                    title="Home"
+                >
+                    <Home size={22} className="group-hover:text-primary transition-colors" />
+                </button>
+
                 {/* Notifications */}
                 <button 
                     onClick={handleNotificationClick}
