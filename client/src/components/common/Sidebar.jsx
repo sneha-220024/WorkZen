@@ -28,7 +28,6 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
         { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard/employee' },
         { label: 'My Profile', icon: User, path: '/dashboard/profile' },
         { label: 'Attendance', icon: Clock, path: '/dashboard/attendance' },
-        { label: 'Leave Management', icon: CalendarCheck, path: '/dashboard/leaves' },
         { label: 'Request Center', icon: HelpCircle, path: '/employee/request-center' },
         { label: 'Payslips', icon: FileText, path: '/dashboard/payslips' },
         { label: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
