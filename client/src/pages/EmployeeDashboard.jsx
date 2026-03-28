@@ -36,13 +36,13 @@ const EmployeeDashboard = () => {
             bgColor: 'bg-blue-50'
         },
         {
-            label: 'Leave Balance',
-            count: '12',
-            description: 'Days Remaining',
-            icon: CheckCircle2,
-            color: 'bg-emerald-500',
-            textColor: 'text-emerald-600',
-            bgColor: 'bg-emerald-50'
+            label: 'Attendance %',
+            count: '95%',
+            description: 'This Month',
+            icon: TrendingUp,
+            color: 'bg-primary',
+            textColor: 'text-primary',
+            bgColor: 'bg-indigo-50'
         },
         {
             label: 'Overtime Hours',
@@ -92,10 +92,10 @@ const EmployeeDashboard = () => {
             if (!token) return;
 
             const [statsRes, historyRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/employee/dashboard-stats', {
+                axios.get('http://localhost:5005/api/employee/dashboard-stats', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get('http://localhost:5000/api/employee/attendance/history', {
+                axios.get('http://localhost:5005/api/employee/attendance/history', {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
@@ -104,9 +104,9 @@ const EmployeeDashboard = () => {
                 const s = statsRes.data.data;
                 setStats([
                     { label: 'Present Days', count: s.presentDays, description: 'This month', icon: Clock, color: 'bg-blue-500', textColor: 'text-blue-600', bgColor: 'bg-blue-50' },
-                    { label: 'Leave Balance', count: s.leaveBalance, description: 'Days remaining', icon: Calendar, color: 'bg-emerald-500', textColor: 'text-emerald-600', bgColor: 'bg-emerald-50' },
-                    { label: 'Overtime Hours', count: s.overtimeHours, description: 'This month', icon: TrendingUp, color: 'bg-orange-500', textColor: 'text-orange-600', bgColor: 'bg-orange-50' },
                     { label: 'Attendance %', count: s.attendancePercentage ? `${s.attendancePercentage}%` : '100%', description: 'This month', icon: TrendingUp, color: 'bg-primary', textColor: 'text-primary', bgColor: 'bg-indigo-50' },
+                    { label: 'Overtime Hours', count: s.overtimeHours, description: 'Current month', icon: Clock, color: 'bg-orange-500', textColor: 'text-orange-600', bgColor: 'bg-orange-50' },
+                    { label: 'Notifications', count: '3', description: 'Unread Alerts', icon: Bell, color: 'bg-purple-500', textColor: 'text-purple-600', bgColor: 'bg-purple-50' },
                 ]);
             }
 
@@ -137,7 +137,6 @@ const EmployeeDashboard = () => {
                 if (mappedActivities.length === 0) {
                     mappedActivities = [
                         { id: '1', type: 'check-in', title: 'Checked in at 09:00 AM', time: '09:00 AM', date: 'Today', icon: Clock, color: 'text-blue-500' },
-                        { id: '2', type: 'leave', title: 'Applied for Sick Leave', time: '11:30 AM', date: 'Yesterday', icon: Calendar, color: 'text-amber-500' },
                         { id: '3', type: 'check-out', title: 'Checked out at 06:15 PM', time: '06:15 PM', date: 'Yesterday', icon: CheckCircle2, color: 'text-emerald-500' },
                         { id: '4', type: 'profile', title: 'Updated Profile Details', time: '10:00 AM', date: 'Mar 15, 2026', icon: TrendingUp, color: 'text-purple-500' },
                         { id: '5', type: 'check-in', title: 'Checked in at 09:10 AM', time: '09:10 AM', date: 'Mar 15, 2026', icon: Clock, color: 'text-blue-500' },
@@ -170,8 +169,8 @@ const EmployeeDashboard = () => {
                         <Calendar size={18} />
                         {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </button>
-                    <button onClick={() => navigate('/dashboard/leaves')} className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">
-                        Apply for Leave
+                    <button onClick={() => navigate('/dashboard/attendance')} className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all">
+                        Attendance History
                     </button>
                 </div>
             </div>
@@ -184,7 +183,7 @@ const EmployeeDashboard = () => {
                         className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 group cursor-pointer"
                         onClick={() => {
                             if (stat.label === 'Notifications') navigate('/dashboard/notifications');
-                            if (stat.label === 'Leave Balance') navigate('/dashboard/leaves');
+
                             if (stat.label === 'Present Days' || stat.label === 'Overtime Hours') navigate('/dashboard/attendance');
                         }}
                     >
@@ -222,9 +221,7 @@ const EmployeeDashboard = () => {
                                     key={activity.id}
                                     className="flex items-start gap-4 group cursor-pointer"
                                     onClick={() => {
-                                        if (activity.type === 'leave') {
-                                            navigate('/dashboard/leaves');
-                                        } else if (activity.type === 'payslip') {
+                                        if (activity.type === 'payslip') {
                                             navigate('/dashboard/payslips');
                                         } else if (activity.type === 'profile') {
                                             navigate('/dashboard/profile');

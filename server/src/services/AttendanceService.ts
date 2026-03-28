@@ -140,6 +140,25 @@ class AttendanceService {
             console.error('[AttendanceService] updateAttendanceAndNotify Error:', error);
         }
     }
+
+    /**
+     * Gets all attendance records for analytical purposes.
+     * @param {string} hrId Optional HR ID to filter by.
+     * @returns {Promise<IAttendance[]>}
+     */
+    static async getAllAttendance(hrId?: string): Promise<any[]> {
+        let query: any = {};
+        
+        if (hrId) {
+            const employees = await Employee.find({ hrId: hrId }, '_id');
+            const employeeIds = employees.map(e => e._id);
+            query.employeeId = { $in: employeeIds };
+        }
+
+        return await Attendance.find(query)
+            .populate('employeeId', 'firstName lastName employeeId department designation')
+            .sort({ date: -1 });
+    }
 }
 
 export default AttendanceService;

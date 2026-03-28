@@ -1,4 +1,4 @@
-﻿import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext(null);
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
                 // Validate the token with the backend
-                const res = await axios.get('http://localhost:5000/api/auth/me', { headers });
+                const res = await axios.get('http://localhost:5005/api/auth/me', { headers });
 
                 if (res.data.success) {
                     // Merge the fresh user data with the stored token so we don't lose it
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const res = await axios.post('http://localhost:5005/api/auth/login', { email, password });
             if (res.data.success) {
                 const userData = res.data; // { success, _id, name, email, role, token }
                 setUser(userData);
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (name, email, password, role) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', { name, email, password, role });
+            const res = await axios.post('http://localhost:5005/api/auth/register', { name, email, password, role });
             if (res.data.success) {
                 const userData = res.data; // { success, _id, name, email, role, token }
                 setUser(userData);

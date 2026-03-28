@@ -11,7 +11,10 @@ import {
     Bell, 
     Search,
     User as UserIcon,
-    LogOut
+    LogOut,
+    MessageSquare,
+    BarChart3,
+    Home
 } from 'lucide-react';
 import logo from '../../assets/workzen-logo-full.png';
 import HRNotificationsPanel from '../notifications/HRNotificationsPanel.jsx';
@@ -45,9 +48,11 @@ const HRLayout = () => {
         { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard/hr' },
         { label: 'Employees', icon: Users, path: '/dashboard/hr/employees' },
         { label: 'Attendance', icon: Calendar, path: '/dashboard/hr/attendance' },
-        { label: 'Leave Management', icon: ClipboardList, path: '/dashboard/hr/leaves' },
+        { label: 'Schedule', icon: Calendar, path: '/dashboard/hr/schedule' },
+        { label: 'Attendance Analytics', icon: BarChart3, path: '/dashboard/hr/leaves' },
         { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
         { label: 'Payslip', icon: FileText, path: '/dashboard/hr/payslips' },
+        { label: 'Employee Requests', icon: MessageSquare, path: '/dashboard/hr/requests' },
         { label: 'Notifications', icon: Bell, path: '/dashboard/hr/notifications' },
     ];
 
@@ -166,6 +171,15 @@ const HRLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
+                        {/* Home Button */}
+                        <button 
+                            onClick={() => navigate('/')}
+                            className="relative p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors group"
+                            title="Home"
+                        >
+                            <Home size={22} className="group-hover:text-blue-600 transition-colors" />
+                        </button>
+
                         <button 
                             onClick={() => setShowNotifications(!showNotifications)}
                             className={`relative p-2 rounded-xl transition-colors ${showNotifications ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}

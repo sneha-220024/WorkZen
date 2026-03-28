@@ -92,7 +92,7 @@ const EditProfileModal = ({ isOpen, onClose, onRefresh, employeeData = null, use
             const token = JSON.parse(userStr).token;
 
             // This assumes the backend endpoint for an employee updating their own profile
-            const response = await axios.put('http://localhost:5000/api/employee/profile', payload, {
+            const response = await axios.put('http://localhost:5005/api/employee/profile', payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

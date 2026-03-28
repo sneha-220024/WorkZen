@@ -2,6 +2,7 @@ import Employee from '../models/Employee';
 import Attendance from '../models/Attendance';
 import Leave from '../models/Leave';
 import Payroll from '../models/Payroll';
+import Request from '../models/Request';
 
 /**
  * Service class for Dashboard overview statistics.
@@ -60,11 +61,18 @@ class DashboardService {
 
         const totalPayrollForCurrentMonth = payrollRecords.reduce((sum, record) => sum + record.netSalary, 0);
 
+        // 5. Pending Employee Requests
+        const pendingRequestsCount = await Request.countDocuments({
+            ...targetEmployeeQuery,
+            status: 'Pending'
+        });
+
         return {
             totalEmployees,
             todaysAttendancePercentage,
             pendingLeaveRequests,
-            totalPayrollForCurrentMonth
+            totalPayrollForCurrentMonth,
+            pendingRequestsCount
         };
     }
 

@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { 
-    Users, 
-    Calendar, 
-    ClipboardList, 
-    BadgeDollarSign, 
-    Plus,
+import {
+    Users,
+    Calendar,
+    ClipboardList,
+    BadgeDollarSign,
     CheckCircle,
     Play,
     UserPlus,
-    BarChart3,
-    MoreVertical
+    MoreVertical,
+    MessageSquare
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +21,7 @@ const HRDashboard = () => {
         totalEmployees: 0,
         todayAttendance: '0%',
         pendingLeaves: 0,
+        pendingRequests: 0,
         payrollSummary: '$0'
     });
     const [activities, setActivities] = useState([]);
@@ -29,12 +29,12 @@ const HRDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
+
         const fetchDashboardData = async () => {
             try {
-                setIsLoading(true);
-                const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
-                
                 if (!token) return;
+                setIsLoading(true);
 
                 const config = {
                     headers: {
@@ -42,7 +42,7 @@ const HRDashboard = () => {
                     }
                 };
 
-                const response = await axios.get('http://localhost:5000/api/hr/dashboard', config);
+                const response = await axios.get('http://localhost:5005/api/hr/dashboard', config);
                 
                 if (response.data.success) {
                     const data = response.data.data;
@@ -50,6 +50,7 @@ const HRDashboard = () => {
                         totalEmployees: data.totalEmployees || 0,
                         todayAttendance: `${data.todaysAttendancePercentage || 0}%`,
                         pendingLeaves: data.pendingLeaveRequests || 0,
+                        pendingRequests: data.pendingRequestsCount || 0,
                         payrollSummary: `$${(data.totalPayrollForCurrentMonth || 0).toLocaleString()}`
                     });
                 }
@@ -62,7 +63,6 @@ const HRDashboard = () => {
 
         const fetchActivities = async (expand = false) => {
             try {
-                const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
                 if (!token) return;
 
                 const config = {
@@ -70,7 +70,7 @@ const HRDashboard = () => {
                 };
 
                 const limit = expand ? 50 : 5;
-                const response = await axios.get(`http://localhost:5000/api/hr/activities?limit=${limit}`, config);
+                const response = await axios.get(`http://localhost:5005/api/hr/activities?limit=${limit}`, config);
                 if (response.data.success) {
                     setActivities(response.data.data);
                 }
@@ -113,7 +113,7 @@ const HRDashboard = () => {
         const date = new Date(timestamp);
         const now = new Date();
         const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-        
+
         if (diffInSeconds < 60) return 'Just now';
         if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
@@ -125,6 +125,7 @@ const HRDashboard = () => {
     const quickActions = [
         { label: 'Add Employee', icon: UserPlus, onClick: () => navigate('/dashboard/hr/employees') },
         { label: 'Approve Leave', icon: CheckCircle, onClick: () => navigate('/dashboard/hr/leaves') },
+        { label: 'Review Requests', icon: MessageSquare, onClick: () => navigate('/dashboard/hr/requests') },
         { label: 'Run Payroll', icon: Play, onClick: () => navigate('/dashboard/hr/payroll') },
     ];
 
@@ -136,31 +137,38 @@ const HRDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 transition-opacity duration-300 ${isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                 <StatCard 
                     title="Total Employees" 
-                    value={stats.totalEmployees} 
+                    value={isLoading ? "..." : stats.totalEmployees} 
                     icon={Users} 
                     color="blue" 
                 />
                 <StatCard 
                     title="Today's Attendance" 
-                    value={stats.todayAttendance} 
+                    value={isLoading ? "..." : stats.todayAttendance} 
                     icon={Calendar} 
                     color="green" 
                 />
                 <StatCard 
                     title="Pending Leaves" 
-                    value={stats.pendingLeaves} 
+                    value={isLoading ? "..." : stats.pendingLeaves} 
                     icon={ClipboardList} 
                     color="red" 
-                    isUrgent={true}
+                    isUrgent={stats.pendingLeaves > 0}
                 />
                 <StatCard 
                     title="Payroll Summary" 
-                    value={stats.payrollSummary} 
+                    value={isLoading ? "..." : stats.payrollSummary} 
                     icon={BadgeDollarSign} 
                     color="purple" 
+                />
+                <StatCard 
+                    title="Employee Requests" 
+                    value={isLoading ? "..." : stats.pendingRequests} 
+                    icon={MessageSquare} 
+                    color="cyan" 
+                    isUrgent={stats.pendingRequests > 0}
                 />
             </div>
 
@@ -168,7 +176,7 @@ const HRDashboard = () => {
                 <div className="lg:col-span-2 bg-white rounded-[24px] p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow flex flex-col">
                     <div className="flex justify-between items-center mb-6 shrink-0">
                         <h3 className="text-xl font-bold text-slate-900">Recent Activity</h3>
-                        <button 
+                        <button
                             onClick={handleViewAll}
                             className="text-blue-600 text-sm font-semibold hover:underline"
                         >
@@ -206,7 +214,7 @@ const HRDashboard = () => {
                     <h3 className="text-xl font-bold text-slate-900 mb-6">Quick Actions</h3>
                     <div className="space-y-3">
                         {quickActions.map((action, idx) => (
-                            <button 
+                            <button
                                 key={idx}
                                 onClick={action.onClick}
                                 className="w-full flex items-center gap-3 px-5 py-4 bg-slate-50 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-200 group border border-transparent hover:shadow-lg hover:shadow-blue-200"
@@ -229,7 +237,8 @@ const StatCard = ({ title, value, icon: Icon, color, isUrgent }) => {
         blue: 'bg-blue-100 text-blue-600',
         green: 'bg-green-100 text-green-600',
         red: 'bg-red-100 text-red-600',
-        purple: 'bg-purple-100 text-purple-600'
+        purple: 'bg-purple-100 text-purple-600',
+        cyan: 'bg-cyan-100 text-cyan-600'
     };
 
     return (

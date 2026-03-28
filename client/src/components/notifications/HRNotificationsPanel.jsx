@@ -31,7 +31,7 @@ const HRNotificationsPanel = () => {
                 headers: { Authorization: `Bearer ${token}` }
             };
 
-            const response = await axios.get('http://localhost:5000/api/hr/activities', config);
+            const response = await axios.get('http://localhost:5005/api/hr/activities', config);
             if (response.data.success) {
                 const mapped = response.data.data.map(act => {
                     return {
@@ -131,7 +131,7 @@ const HRNotificationsPanel = () => {
                 headers: { Authorization: `Bearer ${token}` }
             };
 
-            const response = await axios.patch('http://localhost:5000/api/hr/activities/read-all', {}, config);
+            const response = await axios.patch('http://localhost:5005/api/hr/activities/read-all', {}, config);
             if (response.data.success) {
                 setNotifications(notifications.map(n => ({ ...n, isRead: true })));
             }

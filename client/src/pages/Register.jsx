@@ -22,7 +22,7 @@ export default function Register() {
 
         const result = await register(name, email, password, role);
         if (result.success) {
-            navigate(role === 'hr' ? '/dashboard/hr' : '/dashboard/employee');
+            navigate(role === 'hr' ? '/dashboard/hr' : '/onboarding');
         } else {
             setError(result.message);
         }
@@ -30,7 +30,7 @@ export default function Register() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        window.location.href = 'http://localhost:5005/api/auth/google';
     };
 
     return (

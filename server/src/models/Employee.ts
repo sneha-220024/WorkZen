@@ -28,6 +28,7 @@ export interface IEmployee {
     emergencyContact: string;
     addedBy?: mongoose.Types.ObjectId; // HR who added this employee
     hrId?: mongoose.Types.ObjectId; // Consistent with requirement
+    unassignedHrEmail?: string; // Temporarily store unmapped HR email
     attendancePercentage?: number; // Automatic Attendance Percentage Tracking
     lastAttendanceEmailSent?: Date; // Prevent spamming notifications
     createdAt?: Date;
@@ -139,6 +140,12 @@ const EmployeeSchema: Schema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'HR', // Will point to new HR model if created, or User
             index: true,
+        },
+        unassignedHrEmail: {
+            type: String,
+            trim: true,
+            lowercase: true,
+            match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address'],
         },
         attendancePercentage: {
             type: Number,

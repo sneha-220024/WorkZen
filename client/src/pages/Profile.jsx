@@ -29,7 +29,7 @@ export default function Profile() {
             try {
                 const token = user?.token;
                 if (!token) return;
-                const res = await axios.get('http://localhost:5000/api/employee/profile', {
+                const res = await axios.get('http://localhost:5005/api/employee/profile', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (res.data.success) {

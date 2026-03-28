@@ -15,6 +15,9 @@ router.get('/', EmployeeController.getEmployees);
 // GET /employees/:id - Return employee details
 router.get('/:id', EmployeeController.getEmployeeById);
 
+// POST /employees/onboard - Process employee onboarding form
+router.post('/onboard', EmployeeController.onboardEmployee);
+
 // POST /employees - Create a new employee
 router.post('/', employeeValidationRules, validate, EmployeeController.createEmployee);
 
