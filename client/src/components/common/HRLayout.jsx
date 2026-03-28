@@ -48,7 +48,7 @@ const HRLayout = () => {
         { label: 'Employees', icon: Users, path: '/dashboard/hr/employees' },
         { label: 'Attendance', icon: Calendar, path: '/dashboard/hr/attendance' },
         { label: 'Schedule', icon: Calendar, path: '/dashboard/hr/schedule' },
-        { label: 'Leave Stats', icon: BarChart3, path: '/dashboard/hr/leaves' },
+        { label: 'Attendance Analytics', icon: BarChart3, path: '/dashboard/hr/leaves' },
         { label: 'Payroll', icon: BadgeDollarSign, path: '/dashboard/hr/payroll' },
         { label: 'Payslip', icon: FileText, path: '/dashboard/hr/payslips' },
         { label: 'Employee Requests', icon: MessageSquare, path: '/dashboard/hr/requests' },

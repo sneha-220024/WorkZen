@@ -39,13 +39,12 @@ const StatusBadge = ({ status }) => {
     const isPending = status?.toLowerCase() === 'pending';
     return (
         <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
-                isLeave 
-                ? 'bg-orange-50 text-orange-600 border-orange-200' 
-                : isPending
-                ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
-                : 'bg-green-50 text-green-600 border-green-200'
-            }`}
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${isLeave
+                    ? 'bg-orange-50 text-orange-600 border-orange-200'
+                    : isPending
+                        ? 'bg-yellow-50 text-yellow-600 border-yellow-200'
+                        : 'bg-green-50 text-green-600 border-green-200'
+                }`}
         >
             {status}
         </span>
@@ -162,9 +161,9 @@ const Employees = () => {
     return (
         <div>
             {/* Employee Modal (Add/Edit/View) */}
-            <EmployeeModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
+            <EmployeeModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
                 onRefresh={fetchEmployees}
                 mode={modalMode}
                 employeeData={selectedEmployee}
@@ -184,43 +183,43 @@ const Employees = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Base Salary ($) <span className="text-red-500">*</span></label>
-                                    <input 
+                                    <input
                                         type="number"
                                         required
                                         value={verifyData.salary}
-                                        onChange={(e) => setVerifyData({...verifyData, salary: e.target.value})}
+                                        onChange={(e) => setVerifyData({ ...verifyData, salary: e.target.value })}
                                         className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">HRA ($) <span className="text-red-500">*</span></label>
-                                    <input 
+                                    <input
                                         type="number"
                                         required
                                         value={verifyData.hra}
-                                        onChange={(e) => setVerifyData({...verifyData, hra: e.target.value})}
+                                        onChange={(e) => setVerifyData({ ...verifyData, hra: e.target.value })}
                                         className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Allowances ($) <span className="text-red-500">*</span></label>
-                                    <input 
+                                    <input
                                         type="number"
                                         required
                                         value={verifyData.allowances}
-                                        onChange={(e) => setVerifyData({...verifyData, allowances: e.target.value})}
+                                        onChange={(e) => setVerifyData({ ...verifyData, allowances: e.target.value })}
                                         className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tax (%)</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         value={verifyData.taxPercent}
-                                        onChange={(e) => setVerifyData({...verifyData, taxPercent: e.target.value})}
+                                        onChange={(e) => setVerifyData({ ...verifyData, taxPercent: e.target.value })}
                                         className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm"
                                         placeholder="e.g. 10"
                                     />
@@ -230,19 +229,19 @@ const Employees = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Role (Optional)</label>
-                                            <input 
+                                            <input
                                                 type="text"
                                                 value={verifyData.role}
-                                                onChange={(e) => setVerifyData({...verifyData, role: e.target.value})}
+                                                onChange={(e) => setVerifyData({ ...verifyData, role: e.target.value })}
                                                 className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm"
                                                 placeholder="e.g. Lead Developer"
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Type (Optional)</label>
-                                            <select 
+                                            <select
                                                 value={verifyData.employeeType}
-                                                onChange={(e) => setVerifyData({...verifyData, employeeType: e.target.value})}
+                                                onChange={(e) => setVerifyData({ ...verifyData, employeeType: e.target.value })}
                                                 className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm"
                                             >
                                                 <option value="">Select type</option>
@@ -256,13 +255,13 @@ const Employees = () => {
                             </div>
                         </div>
                         <div className="px-8 py-6 border-t border-slate-100 bg-slate-50/50 flex gap-4">
-                            <button 
+                            <button
                                 onClick={() => setIsVerifyOpen(false)}
                                 className="flex-1 py-4 bg-white text-slate-600 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all text-sm"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 onClick={handleVerifySubmit}
                                 disabled={!verifyData.salary || !verifyData.hra || !verifyData.allowances}
                                 className="flex-[2] py-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold rounded-2xl shadow-xl shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm disabled:opacity-50"
@@ -342,7 +341,7 @@ const Employees = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div 
+                                                    <div
                                                         style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}
                                                         className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm"
                                                     >
@@ -369,7 +368,7 @@ const Employees = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                                                     {displayStatus === 'Pending' && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleOpenVerify(emp)}
                                                             className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
                                                             title="Verify Employee"
@@ -377,21 +376,21 @@ const Employees = () => {
                                                             <CheckCircle size={18} />
                                                         </button>
                                                     )}
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleView(emp)}
                                                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                                                         title="View Details"
                                                     >
                                                         <Eye size={18} />
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleEdit(emp)}
                                                         className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
                                                         title="Edit Employee"
                                                     >
                                                         <Pencil size={18} />
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleDelete(emp._id)}
                                                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                                         title="Deactivate"

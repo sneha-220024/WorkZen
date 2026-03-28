@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { 
-    Users, 
-    Calendar, 
-    ClipboardList, 
-    BadgeDollarSign, 
-    Plus,
+import {
+    Users,
+    Calendar,
+    ClipboardList,
+    BadgeDollarSign,
     CheckCircle,
     Play,
     UserPlus,
-    BarChart3,
     MoreVertical,
     MessageSquare
 } from 'lucide-react';
@@ -31,12 +29,12 @@ const HRDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
+
         const fetchDashboardData = async () => {
             try {
-                setIsLoading(true);
-                const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
-                
                 if (!token) return;
+                setIsLoading(true);
 
                 const config = {
                     headers: {
@@ -65,7 +63,6 @@ const HRDashboard = () => {
 
         const fetchActivities = async (expand = false) => {
             try {
-                const token = user?.token || JSON.parse(localStorage.getItem('user'))?.token;
                 if (!token) return;
 
                 const config = {
@@ -116,7 +113,7 @@ const HRDashboard = () => {
         const date = new Date(timestamp);
         const now = new Date();
         const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-        
+
         if (diffInSeconds < 60) return 'Just now';
         if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
@@ -140,37 +137,37 @@ const HRDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 transition-opacity duration-300 ${isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                 <StatCard 
                     title="Total Employees" 
-                    value={stats.totalEmployees} 
+                    value={isLoading ? "..." : stats.totalEmployees} 
                     icon={Users} 
                     color="blue" 
                 />
                 <StatCard 
                     title="Today's Attendance" 
-                    value={stats.todayAttendance} 
+                    value={isLoading ? "..." : stats.todayAttendance} 
                     icon={Calendar} 
                     color="green" 
                 />
                 <StatCard 
                     title="Pending Leaves" 
-                    value={stats.pendingLeaves} 
+                    value={isLoading ? "..." : stats.pendingLeaves} 
                     icon={ClipboardList} 
                     color="red" 
-                    isUrgent={true}
+                    isUrgent={stats.pendingLeaves > 0}
                 />
                 <StatCard 
                     title="Payroll Summary" 
-                    value={stats.payrollSummary} 
+                    value={isLoading ? "..." : stats.payrollSummary} 
                     icon={BadgeDollarSign} 
                     color="purple" 
                 />
                 <StatCard 
                     title="Employee Requests" 
-                    value={stats.pendingRequests} 
+                    value={isLoading ? "..." : stats.pendingRequests} 
                     icon={MessageSquare} 
-                    color="blue" 
+                    color="cyan" 
                     isUrgent={stats.pendingRequests > 0}
                 />
             </div>
@@ -179,7 +176,7 @@ const HRDashboard = () => {
                 <div className="lg:col-span-2 bg-white rounded-[24px] p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow flex flex-col">
                     <div className="flex justify-between items-center mb-6 shrink-0">
                         <h3 className="text-xl font-bold text-slate-900">Recent Activity</h3>
-                        <button 
+                        <button
                             onClick={handleViewAll}
                             className="text-blue-600 text-sm font-semibold hover:underline"
                         >
@@ -217,7 +214,7 @@ const HRDashboard = () => {
                     <h3 className="text-xl font-bold text-slate-900 mb-6">Quick Actions</h3>
                     <div className="space-y-3">
                         {quickActions.map((action, idx) => (
-                            <button 
+                            <button
                                 key={idx}
                                 onClick={action.onClick}
                                 className="w-full flex items-center gap-3 px-5 py-4 bg-slate-50 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-200 group border border-transparent hover:shadow-lg hover:shadow-blue-200"
@@ -240,7 +237,8 @@ const StatCard = ({ title, value, icon: Icon, color, isUrgent }) => {
         blue: 'bg-blue-100 text-blue-600',
         green: 'bg-green-100 text-green-600',
         red: 'bg-red-100 text-red-600',
-        purple: 'bg-purple-100 text-purple-600'
+        purple: 'bg-purple-100 text-purple-600',
+        cyan: 'bg-cyan-100 text-cyan-600'
     };
 
     return (

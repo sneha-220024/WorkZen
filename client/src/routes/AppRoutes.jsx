@@ -15,7 +15,7 @@ import PayslipsPage from '../pages/PayslipsPage.jsx';
 import NotificationsPage from '../pages/NotificationsPage.jsx';
 import Employees from '../pages/Employees.jsx';
 import HRAttendance from '../pages/HRAttendance.jsx';
-import HRLeaveManagement from '../pages/HRLeaveManagement.jsx';
+import AttendanceAnalytics from '../pages/AttendanceAnalytics.jsx';
 import HRPayrollManagement from '../pages/HRPayrollManagement.jsx';
 import SchedulePage from '../pages/SchedulePage.jsx';
 import ProtectedRoute from '../components/common/ProtectedRoute.jsx';
@@ -149,7 +149,7 @@ export default function AppRoutes() {
                 <Route index element={<HRDashboard />} />
                 <Route path="employees" element={<Employees />} />
                 <Route path="attendance" element={<HRAttendance />} />
-                <Route path="leaves" element={<HRLeaveManagement />} />
+                <Route path="leaves" element={<AttendanceAnalytics />} />
                 <Route path="payroll" element={<HRPayrollManagement />} />
                 <Route path="payslips" element={<Payslips />} />
                 <Route path="requests" element={<EmployeeRequests />} />

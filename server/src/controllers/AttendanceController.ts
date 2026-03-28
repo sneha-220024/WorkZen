@@ -137,6 +137,20 @@ class AttendanceController {
             next(error);
         }
     }
+
+    /**
+     * Get all attendance records (HR analytics).
+     */
+    static async getAllAttendance(req: any, res: Response, next: NextFunction) {
+        try {
+            const userRole = req.user?.role?.toLowerCase();
+            const hrId = userRole === 'hr' ? req.user._id : undefined;
+            const attendance = await AttendanceService.getAllAttendance(hrId);
+            res.status(200).json({ success: true, data: attendance });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default AttendanceController;

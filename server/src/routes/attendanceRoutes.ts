@@ -20,4 +20,7 @@ router.get('/today', AttendanceController.getTodaysAttendance);
 // GET /attendance/employee/:employeeId - Return attendance history of employee
 router.get('/employee/:employeeId', AttendanceController.getEmployeeAttendanceHistory);
 
+// GET /attendance/all - Return all attendance records (HR analytics)
+router.get('/all', AttendanceController.getAllAttendance);
+
 export default router;
