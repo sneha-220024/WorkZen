@@ -16,6 +16,7 @@ import {
     BadgeDollarSign,
     HelpCircle
 } from 'lucide-react';
+import logo from '../../assets/workzen-logo-full.png';
 
 const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
     const { user, logout } = useContext(AuthContext);
@@ -64,14 +65,14 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
 
     return (
         <aside className="w-64 bg-slate-900 h-screen flex flex-col text-slate-300">
-            {/* Logo Area */}
-            <div className="p-6 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-[10px] bg-primary flex items-center justify-center shadow-lg hover:rotate-12 transition-transform cursor-pointer" onClick={() => navigate('/')}>
-                    <Home className="text-white" size={20} />
-                </div>
-                <span className="font-sora font-bold text-xl text-white">
-                    Work<span className="text-primary">Zen</span>
-                </span>
+            
+            {/* ✅ Logo Area (FIXED) */}
+            <div className="p-6 flex items-center justify-center border-b border-slate-800">
+                <img 
+                    src={logo} 
+                    alt="WorkZen Logo" 
+                    className="max-w-[160px] h-auto object-contain"
+                />
             </div>
 
             {/* Navigation Items */}
@@ -98,7 +99,11 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
                     >
                         <item.icon 
                             size={20} 
-                            className={`${!item.disabled && (isActive(item.path) || (item.label === 'Notifications' && isNotificationsActive)) ? 'text-white' : 'text-slate-500 group-hover:text-white transition-colors'}`} 
+                            className={`${
+                                !item.disabled && (isActive(item.path) || (item.label === 'Notifications' && isNotificationsActive)) 
+                                    ? 'text-white' 
+                                    : 'text-slate-500 group-hover:text-white transition-colors'
+                            }`} 
                         />
                         <span className="font-medium text-sm">{item.label}</span>
                     </Link>
