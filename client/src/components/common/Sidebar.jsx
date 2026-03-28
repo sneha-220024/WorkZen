@@ -12,6 +12,7 @@ import {
     LogOut,
     Home
 } from 'lucide-react';
+import logo from '../../assets/workzen-logo-full.png';
 
 const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
     const { logout } = useContext(AuthContext);
@@ -47,13 +48,8 @@ const Sidebar = ({ onNotificationClick, isNotificationsActive }) => {
     return (
         <aside className="w-64 bg-slate-900 h-screen flex flex-col text-slate-300">
             {/* Logo Area */}
-            <div className="p-6 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-[10px] bg-primary flex items-center justify-center shadow-lg">
-                    <Home className="text-white" size={20} />
-                </div>
-                <span className="font-sora font-bold text-xl text-white">
-                    Work<span className="text-primary">Zen</span>
-                </span>
+            <div className="p-6 flex items-center justify-center border-b border-slate-800">
+                <img src={logo} alt="WorkZen Logo" className="logo max-w-[180px]" />
             </div>
 
             {/* Navigation Items */}

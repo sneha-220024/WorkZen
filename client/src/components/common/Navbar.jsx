@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from './Button.jsx';
+import logo from '../../assets/workzen-logo-full.png';
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -28,16 +29,8 @@ export default function Navbar() {
         >
             <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-2.5 group">
-                    <div className="w-9 h-9 rounded-[10px] bg-primary flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <polyline points="9 22 9 12 15 12 15 22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                    </div>
-                    <span className="font-sora font-bold text-xl text-text-primary">
-                        Work<span className="text-primary">Zen</span>
-                    </span>
+                <Link to="/" className="flex items-center group">
+                    <img src={logo} alt="WorkZen Logo" className="logo hover:scale-105 transition-transform" />
                 </Link>
 
                 {/* Desktop Nav */}

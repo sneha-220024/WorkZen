@@ -13,6 +13,7 @@ import {
     User as UserIcon,
     LogOut
 } from 'lucide-react';
+import logo from '../../assets/workzen-logo-full.png';
 import HRNotificationsPanel from '../notifications/HRNotificationsPanel.jsx';
 import HRProfilePopup from './HRProfilePopup.jsx';
 
@@ -64,10 +65,10 @@ const HRLayout = () => {
         <div className="flex min-h-screen bg-[#F5F7FB] font-inter">
             {/* Sidebar */}
             <aside className="w-64 bg-[#1E2640] text-slate-300 flex flex-col fixed h-full z-20 shadow-xl">
-                <div className="p-8">
-                    <h1 className="font-sora font-bold text-2xl text-white">Work<span className="text-blue-400">Zen</span></h1>
+                <div className="p-6 flex items-center justify-center border-b border-slate-700">
+                    <img src={logo} alt="WorkZen Logo" className="logo max-w-[180px]" />
                 </div>
-                <nav className="flex-1 px-4 space-y-2">
+                <nav className="flex-1 px-4 space-y-2 mt-4">
                     {sidebarItems.map((item, idx) => (
                         <div 
                             key={idx} 
